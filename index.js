@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 10000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const APPEAL_CHANNEL_ID = process.env.APPEAL_CHANNEL_ID;
-const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID;
+const TICKET_CHANNEL_ID = process.env.TICKET_CHANNEL_ID || process.env.APPEAL_CHANNEL_ID;
+const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || "1538206195238572142";
 
 // ============================
 // ПРОВЕРКА ПЕРЕМЕННЫХ
@@ -24,14 +24,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 
 if (!DISCORD_TOKEN) {
     console.warn("⚠️ DISCORD_TOKEN не задан — бот не запустится!");
-}
-
-if (!APPEAL_CHANNEL_ID) {
-    console.warn("⚠️ APPEAL_CHANNEL_ID не задан!");
-}
-
-if (!STAFF_ROLE_ID) {
-    console.warn("⚠️ STAFF_ROLE_ID не задан!");
 }
 
 // ============================
@@ -63,33 +55,34 @@ app.use(cors({ origin: "*" }));
 app.get("/", (req, res) => {
     res.json({
         status: "online",
-        message: "Appeal API is working"
+        message: "Ticket API is working"
     });
 });
 
 // ============================
-// СОЗДАНИЕ АПЕЛЛЯЦИИ
+// СОЗДАНИЕ ТИКЕТА
 // ============================
-app.post("/api/appeals", async (req, res) => {
+app.post("/api/tickets", async (req, res) => {
     try {
-        const { discord, nickname, punishment, reason } = req.body;
+        const { userId, userName, subject, message, priority } = req.body;
 
-        if (!discord || !nickname || !punishment || !reason) {
+        if (!userId || !userName || !subject || !message) {
             return res.status(400).json({
                 success: false,
                 message: "Заполните все поля."
             });
         }
 
-        // Создаем запись
+        // Создаем тикет
         const { data, error } = await supabase
-            .from("appeals")
+            .from("tickets")
             .insert({
-                discord_id: discord,
-                discord_username: nickname,
-                punishment: punishment,
-                reason: reason,
-                status: "pending"
+                user_id: userId,
+                user_name: userName,
+                subject: subject,
+                message: message,
+                priority: priority || 'medium',
+                status: 'open'
             })
             .select()
             .single();
@@ -102,57 +95,73 @@ app.post("/api/appeals", async (req, res) => {
             });
         }
 
-        // Создаем номер апелляции
-        const appealNumber = "AP-" + String(data.id).padStart(6, "0");
+        // Создаем номер тикета
+        const ticketNumber = "TK-" + String(data.id).padStart(6, "0");
 
         await supabase
-            .from("appeals")
-            .update({ appeal_number: appealNumber })
+            .from("tickets")
+            .update({ ticket_number: ticketNumber })
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В DISCORD (НОВЫЙ ДИЗАЙН)
+        // ОТПРАВКА В DISCORD
         // ============================
         try {
-            const channel = await discordClient.channels.fetch(APPEAL_CHANNEL_ID);
+            const channel = await discordClient.channels.fetch(TICKET_CHANNEL_ID);
             
             if (channel) {
+                const priorityEmoji = {
+                    low: '🟢',
+                    medium: '🟡',
+                    high: '🔴'
+                }[priority] || '🟡';
+
                 const embed = new EmbedBuilder()
-                    .setTitle('✦ Новая апелляция')
+                    .setTitle('🎫 Новый тикет')
                     .setColor(0x5865F2)
-                    .setThumbnail('https://cdn.discordapp.com/embed/avatars/0.png')
-                    .setDescription(`**${nickname}** подал(а) апелляцию.`)
+                    .setDescription(`**${userName}** создал(а) обращение.`)
                     .addFields(
-                        { name: '📌 Номер', value: `\`${appealNumber}\``, inline: true },
-                        { name: '🆔 Discord ID', value: `<@${discord}>`, inline: true },
-                        { name: '👤 Ник', value: nickname, inline: true },
-                        { name: '📝 Причина', value: reason.length > 500 ? reason.slice(0, 500) + '…' : reason },
-                        { name: '⏳ Статус', value: '🟡 На рассмотрении', inline: true }
+                        { name: '📌 Номер', value: `\`${ticketNumber}\``, inline: true },
+                        { name: '👤 Пользователь', value: `<@${userId}>`, inline: true },
+                        { name: '📊 Приоритет', value: `${priorityEmoji} ${priority || 'medium'}`, inline: true },
+                        { name: '📝 Тема', value: subject },
+                        { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
+                        { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
                     )
-                    .setFooter({ text: 'Nexus Appeals • Защищённая система', iconURL: 'https://cdn.discordapp.com/embed/avatars/0.png' })
+                    .setFooter({ text: 'Ticket System • Защищённая система' })
                     .setTimestamp();
 
+                // Кнопки для тикета
                 const buttons = new ActionRowBuilder()
                     .addComponents(
                         new ButtonBuilder()
-                            .setCustomId(`approve_${data.id}`)
-                            .setLabel("Одобрить")
-                            .setEmoji("✅")
-                            .setStyle(ButtonStyle.Success),
+                            .setCustomId(`take_${data.id}`)
+                            .setLabel("Взять в работу")
+                            .setEmoji("🛠️")
+                            .setStyle(ButtonStyle.Primary),
                         new ButtonBuilder()
-                            .setCustomId(`reject_${data.id}`)
-                            .setLabel("Отклонить")
-                            .setEmoji("❌")
-                            .setStyle(ButtonStyle.Danger)
+                            .setCustomId(`close_${data.id}`)
+                            .setLabel("Закрыть тикет")
+                            .setEmoji("🔒")
+                            .setStyle(ButtonStyle.Danger),
+                        new ButtonBuilder()
+                            .setCustomId(`quick_reply_${data.id}`)
+                            .setLabel("Быстрый ответ")
+                            .setEmoji("⚡")
+                            .setStyle(ButtonStyle.Success)
                     );
 
+                // Пинг роли саппорта
+                const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
+
                 const message = await channel.send({
+                    content: content,
                     embeds: [embed],
                     components: [buttons]
                 });
 
                 await supabase
-                    .from("appeals")
+                    .from("tickets")
                     .update({
                         discord_message_id: message.id,
                         discord_channel_id: channel.id
@@ -165,7 +174,8 @@ app.post("/api/appeals", async (req, res) => {
 
         res.json({
             success: true,
-            appealNumber: appealNumber
+            ticketNumber: ticketNumber,
+            ticketId: data.id
         });
 
     } catch (error) {
@@ -178,28 +188,28 @@ app.post("/api/appeals", async (req, res) => {
 });
 
 // ============================
-// ПОЛУЧЕНИЕ СТАТУСА
+// ПОЛУЧЕНИЕ ТИКЕТА ПО НОМЕРУ
 // ============================
-app.get("/api/appeals/:number", async (req, res) => {
+app.get("/api/tickets/:number", async (req, res) => {
     try {
         const number = req.params.number.toUpperCase();
 
         const { data, error } = await supabase
-            .from("appeals")
-            .select("appeal_number, discord_username, punishment, status, decision_reason, moderator_username, created_at, decided_at")
-            .eq("appeal_number", number)
+            .from("tickets")
+            .select("*")
+            .eq("ticket_number", number)
             .single();
 
         if (error || !data) {
             return res.status(404).json({
                 success: false,
-                message: "Апелляция не найдена."
+                message: "Тикет не найден."
             });
         }
 
         res.json({
             success: true,
-            appeal: data
+            ticket: data
         });
 
     } catch (error) {
@@ -212,137 +222,271 @@ app.get("/api/appeals/:number", async (req, res) => {
 });
 
 // ============================
-// BUTTON INTERACTIONS
+// ПОЛУЧЕНИЕ ТИКЕТОВ ПОЛЬЗОВАТЕЛЯ
+// ============================
+app.get("/api/tickets/user/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        const { data, error } = await supabase
+            .from("tickets")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Ошибка базы данных."
+            });
+        }
+
+        res.json({
+            success: true,
+            tickets: data
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Ошибка сервера."
+        });
+    }
+});
+
+// ============================
+// BUTTON INTERACTIONS (Discord)
 // ============================
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isButton()) return;
 
-        // Проверка прав
+        // Проверка прав (только для саппортов)
         if (!interaction.member || !interaction.member.roles.cache.has(STAFF_ROLE_ID)) {
             return interaction.reply({
-                content: "❌ У вас нет прав для рассмотрения апелляций.",
+                content: "❌ У вас нет прав для работы с тикетами.",
                 ephemeral: true
             });
         }
 
         const [action, id] = interaction.customId.split("_");
+        const ticketId = Number(id);
 
-        if (action === "approve") {
-            await decideAppeal(interaction, Number(id), "approved", "Одобрено администрацией.");
-        } else if (action === "reject") {
+        // ============================
+        // ВЗЯТЬ ТИКЕТ
+        // ============================
+        if (action === "take") {
+            const { data, error } = await supabase
+                .from("tickets")
+                .select("*")
+                .eq("id", ticketId)
+                .single();
+
+            if (error || !data) {
+                return interaction.reply({
+                    content: "❌ Тикет не найден.",
+                    ephemeral: true
+                });
+            }
+
+            if (data.status !== "open") {
+                return interaction.reply({
+                    content: "⚠️ Этот тикет уже закрыт или взят в работу.",
+                    ephemeral: true
+                });
+            }
+
+            await supabase
+                .from("tickets")
+                .update({
+                    status: "in_progress",
+                    assigned_to: interaction.user.id,
+                    assigned_name: interaction.user.username,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("id", ticketId);
+
+            // Обновляем сообщение в Discord
+            const channel = await discordClient.channels.fetch(data.discord_channel_id);
+            const message = await channel.messages.fetch(data.discord_message_id);
+
+            const newEmbed = EmbedBuilder.from(message.embeds[0])
+                .setColor(0xf0b400);
+
+            const fields = newEmbed.data.fields || [];
+            const statusField = fields.find(f => f.name === "⏳ Статус");
+            if (statusField) {
+                statusField.value = "🟡 В работе";
+            }
+
+            newEmbed.addFields(
+                { name: "🛠️ Модератор", value: `<@${interaction.user.id}>` }
+            );
+
+            await message.edit({
+                embeds: [newEmbed]
+            });
+
+            await interaction.reply({
+                content: "✅ Тикет взят в работу!",
+                ephemeral: true
+            });
+        }
+
+        // ============================
+        // ЗАКРЫТЬ ТИКЕТ
+        // ============================
+        if (action === "close") {
+            const { data, error } = await supabase
+                .from("tickets")
+                .select("*")
+                .eq("id", ticketId)
+                .single();
+
+            if (error || !data) {
+                return interaction.reply({
+                    content: "❌ Тикет не найден.",
+                    ephemeral: true
+                });
+            }
+
+            if (data.status === "closed") {
+                return interaction.reply({
+                    content: "⚠️ Тикет уже закрыт.",
+                    ephemeral: true
+                });
+            }
+
             const modal = new ModalBuilder()
-                .setCustomId(`reject_modal_${id}`)
-                .setTitle("Причина отклонения");
+                .setCustomId(`close_reason_${ticketId}`)
+                .setTitle("Закрытие тикета");
 
             const input = new TextInputBuilder()
-                .setCustomId("reject_reason")
-                .setLabel("Причина")
+                .setCustomId("close_reason")
+                .setLabel("Причина закрытия")
                 .setStyle(TextInputStyle.Paragraph)
-                .setPlaceholder("Напишите причину отклонения...")
+                .setPlaceholder("Кратко опишите причину закрытия...")
+                .setRequired(false);
+
+            modal.addComponents(new ActionRowBuilder().addComponents(input));
+            await interaction.showModal(modal);
+        }
+
+        // ============================
+        // БЫСТРЫЙ ОТВЕТ
+        // ============================
+        if (action === "quick_reply") {
+            const modal = new ModalBuilder()
+                .setCustomId(`quick_reply_${ticketId}`)
+                .setTitle("Быстрый ответ");
+
+            const input = new TextInputBuilder()
+                .setCustomId("reply_text")
+                .setLabel("Текст ответа")
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder("Введите ответ на тикет...")
                 .setRequired(true);
 
             modal.addComponents(new ActionRowBuilder().addComponents(input));
             await interaction.showModal(modal);
         }
+
     } catch (error) {
         console.error(error);
     }
 });
 
 // ============================
-// MODAL SUBMIT
+// MODAL SUBMIT (Discord)
 // ============================
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isModalSubmit()) return;
-        if (!interaction.customId.startsWith("reject_modal_")) return;
 
-        if (!interaction.member || !interaction.member.roles.cache.has(STAFF_ROLE_ID)) {
-            return interaction.reply({
-                content: "❌ У вас нет прав.",
+        // Закрытие тикета
+        if (interaction.customId.startsWith("close_reason_")) {
+            const ticketId = Number(interaction.customId.replace("close_reason_", ""));
+            const reason = interaction.fields.getTextInputValue("close_reason") || "Причина не указана";
+
+            const { data, error } = await supabase
+                .from("tickets")
+                .select("*")
+                .eq("id", ticketId)
+                .single();
+
+            if (error || !data) {
+                return interaction.reply({
+                    content: "❌ Тикет не найден.",
+                    ephemeral: true
+                });
+            }
+
+            await supabase
+                .from("tickets")
+                .update({
+                    status: "closed",
+                    updated_at: new Date().toISOString(),
+                    closed_at: new Date().toISOString()
+                })
+                .eq("id", ticketId);
+
+            // Обновляем сообщение в Discord
+            const channel = await discordClient.channels.fetch(data.discord_channel_id);
+            const message = await channel.messages.fetch(data.discord_message_id);
+
+            const newEmbed = EmbedBuilder.from(message.embeds[0])
+                .setColor(0xED4245);
+
+            const fields = newEmbed.data.fields || [];
+            const statusField = fields.find(f => f.name === "⏳ Статус");
+            if (statusField) {
+                statusField.value = "🔴 Закрыт";
+            }
+
+            newEmbed.addFields(
+                { name: "🔒 Причина закрытия", value: reason }
+            );
+
+            await message.edit({
+                embeds: [newEmbed],
+                components: []
+            });
+
+            await interaction.reply({
+                content: "✅ Тикет закрыт!",
                 ephemeral: true
             });
         }
 
-        const id = Number(interaction.customId.replace("reject_modal_", ""));
-        const reason = interaction.fields.getTextInputValue("reject_reason");
+        // Быстрый ответ
+        if (interaction.customId.startsWith("quick_reply_")) {
+            const ticketId = Number(interaction.customId.replace("quick_reply_", ""));
+            const reply = interaction.fields.getTextInputValue("reply_text");
 
-        await decideAppeal(interaction, id, "rejected", reason);
+            const { data, error } = await supabase
+                .from("tickets")
+                .select("*")
+                .eq("id", ticketId)
+                .single();
+
+            if (error || !data) {
+                return interaction.reply({
+                    content: "❌ Тикет не найден.",
+                    ephemeral: true
+                });
+            }
+
+            await interaction.reply({
+                content: `✅ Быстрый ответ отправлен!\n\n📝 **Ответ:**\n${reply}`,
+                ephemeral: true
+            });
+        }
+
     } catch (error) {
         console.error(error);
     }
 });
-
-// ============================
-// DECIDE APPEAL
-// ============================
-async function decideAppeal(interaction, id, status, decisionReason) {
-    const { data, error } = await supabase
-        .from("appeals")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-    if (error || !data) {
-        return interaction.reply({
-            content: "❌ Апелляция не найдена.",
-            ephemeral: true
-        });
-    }
-
-    if (data.status !== "pending") {
-        return interaction.reply({
-            content: "⚠️ Эта апелляция уже рассмотрена.",
-            ephemeral: true
-        });
-    }
-
-    const moderator = interaction.user;
-
-    await supabase
-        .from("appeals")
-        .update({
-            status: status,
-            decision_reason: decisionReason,
-            moderator_id: moderator.id,
-            moderator_username: moderator.username,
-            decided_at: new Date().toISOString()
-        })
-        .eq("id", id);
-
-    // Обновляем сообщение в Discord
-    try {
-        const channel = await discordClient.channels.fetch(data.discord_channel_id);
-        const message = await channel.messages.fetch(data.discord_message_id);
-
-        const newEmbed = EmbedBuilder.from(message.embeds[0])
-            .setColor(status === "approved" ? 0x57F287 : 0xED4245);
-
-        const fields = newEmbed.data.fields || [];
-        const statusField = fields.find(field => field.name === "⏳ Статус");
-        if (statusField) {
-            statusField.value = status === "approved" ? "🟢 Одобрена" : "🔴 Отклонена";
-        }
-
-        newEmbed.addFields(
-            { name: "📌 Решение", value: decisionReason },
-            { name: "👤 Модератор", value: `<@${moderator.id}>` }
-        );
-
-        await message.edit({
-            embeds: [newEmbed],
-            components: []
-        });
-    } catch (discordError) {
-        console.error("Ошибка обновления сообщения:", discordError.message);
-    }
-
-    await interaction.reply({
-        content: status === "approved" ? "✅ Апелляция одобрена." : "❌ Апелляция отклонена.",
-        ephemeral: true
-    });
-}
 
 // ============================
 // ЗАПУСК
