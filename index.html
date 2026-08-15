@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>✨ Nexus Appeals — Premium System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    <title>✨ Nexus Support — Ticket System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <style>
         * {
             margin: 0;
@@ -42,14 +42,12 @@
             z-index: 1;
         }
 
-        /* ===== ШАПКА ===== */
         .header {
             text-align: center;
             padding: 30px 0 20px;
             position: relative;
         }
 
-        /* Верхняя строка: статус справа */
         .header-top {
             display: flex;
             align-items: center;
@@ -57,7 +55,6 @@
             margin-bottom: 15px;
         }
 
-        /* Индикатор статуса */
         .status-badge {
             display: flex;
             align-items: center;
@@ -79,22 +76,11 @@
             border-radius: 50%;
             display: inline-block;
             background: #4a5568;
-            transition: background 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .status-dot.online {
-            background: #57f287;
-            box-shadow: 0 0 12px rgba(87, 242, 135, 0.4);
-        }
-
-        .status-dot.offline {
-            background: #ed4245;
-            box-shadow: 0 0 12px rgba(237, 66, 69, 0.4);
-        }
-
-        .status-text {
-            color: #b0bbd4;
-        }
+        .status-dot.online { background: #57f287; box-shadow: 0 0 12px rgba(87, 242, 135, 0.4); }
+        .status-dot.offline { background: #ed4245; box-shadow: 0 0 12px rgba(237, 66, 69, 0.4); }
 
         .header .badge {
             display: inline-block;
@@ -127,7 +113,6 @@
             font-weight: 400;
         }
 
-        /* ===== КАРТОЧКА ===== */
         .card {
             background: rgba(16, 24, 36, 0.75);
             backdrop-filter: blur(20px);
@@ -136,11 +121,12 @@
             padding: 40px 36px;
             box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
             transition: all 0.3s ease;
+            margin-bottom: 30px;
         }
 
         .card:hover {
             border-color: rgba(88, 101, 242, 0.2);
-            box-shadow: 0 40px 80px -20px rgba(88, 101, 242, 0.15), 0 0 0 1px rgba(88, 101, 242, 0.05) inset;
+            box-shadow: 0 40px 80px -20px rgba(88, 101, 242, 0.15);
         }
 
         .card h2 {
@@ -154,7 +140,6 @@
             color: #8892a8;
             font-size: 15px;
             margin-bottom: 28px;
-            font-weight: 400;
         }
 
         label {
@@ -166,8 +151,7 @@
             margin-bottom: 6px;
         }
 
-        input,
-        textarea {
+        input, textarea, select {
             width: 100%;
             background: rgba(10, 16, 26, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -179,20 +163,17 @@
             font-size: 15px;
             font-family: 'Inter', sans-serif;
             transition: 0.25s ease;
-            backdrop-filter: blur(4px);
         }
 
-        input:focus,
-        textarea:focus {
+        input:focus, textarea:focus, select:focus {
             border-color: #5865f2;
             background: rgba(10, 16, 26, 0.8);
             box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.1);
         }
 
-        textarea {
-            min-height: 130px;
-            resize: vertical;
-        }
+        select option { background: #111720; }
+
+        textarea { min-height: 120px; resize: vertical; }
 
         .btn-primary {
             width: 100%;
@@ -206,7 +187,6 @@
             cursor: pointer;
             transition: 0.25s ease;
             box-shadow: 0 4px 14px rgba(88, 101, 242, 0.3);
-            letter-spacing: 0.3px;
         }
 
         .btn-primary:hover {
@@ -218,61 +198,6 @@
             opacity: 0.5;
             transform: none;
             cursor: not-allowed;
-        }
-
-        .status {
-            margin-top: 24px;
-            padding: 16px 20px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            display: none;
-            border: 1px solid transparent;
-        }
-
-        .status.success {
-            display: block;
-            border-color: rgba(87, 242, 135, 0.25);
-            background: rgba(87, 242, 135, 0.04);
-        }
-
-        .status.error {
-            display: block;
-            border-color: rgba(237, 66, 69, 0.25);
-            background: rgba(237, 66, 69, 0.04);
-        }
-
-        .status-title {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .divider {
-            margin: 40px 0 30px;
-            border: none;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
-        }
-
-        .status-check h2 {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .status-check .description {
-            color: #8892a8;
-            font-size: 15px;
-            margin-bottom: 20px;
-        }
-
-        .check-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .check-row input {
-            flex: 1;
-            margin-bottom: 0;
         }
 
         .btn-secondary {
@@ -294,6 +219,34 @@
             border-color: rgba(255, 255, 255, 0.08);
         }
 
+        .status {
+            margin-top: 24px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            display: none;
+            border: 1px solid transparent;
+        }
+
+        .status.success { display: block; border-color: rgba(87, 242, 135, 0.25); background: rgba(87, 242, 135, 0.04); }
+        .status.error { display: block; border-color: rgba(237, 66, 69, 0.25); background: rgba(237, 66, 69, 0.04); }
+
+        .status-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+
+        .divider {
+            margin: 30px 0;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        }
+
+        .check-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .check-row input { flex: 1; margin-bottom: 0; }
+
         .status-result {
             margin-top: 20px;
             padding: 18px 22px;
@@ -303,58 +256,70 @@
             border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .status-result.visible {
-            display: block;
+        .status-result.visible { display: block; }
+
+        .ticket-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .ticket-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(88, 101, 242, 0.2);
+        }
+
+        .ticket-item .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .ticket-item .ticket-subject {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .ticket-item .ticket-status {
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .ticket-item .ticket-status.open { color: #57f287; }
+        .ticket-item .ticket-status.in_progress { color: #f0b400; }
+        .ticket-item .ticket-status.closed { color: #ed4245; }
+
+        .ticket-item .ticket-meta {
+            color: #8892a8;
+            font-size: 13px;
+            margin-top: 4px;
         }
 
         .footer {
             text-align: center;
             color: #3d4659;
-            padding: 40px 0 30px;
+            padding: 30px 0;
             font-size: 14px;
-            letter-spacing: 0.3px;
         }
 
-        .footer span {
-            color: #5865f2;
-        }
+        .footer span { color: #5865f2; }
 
         @media (max-width: 600px) {
-            .header h1 {
-                font-size: 30px;
-            }
-
-            .card {
-                padding: 28px 20px;
-            }
-
-            .check-row {
-                flex-direction: column;
-            }
-
-            .btn-secondary {
-                width: 100%;
-                justify-content: center;
-                text-align: center;
-            }
-
-            .header-top {
-                justify-content: center;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #05080f;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e2a3a;
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2a3a50;
+            .header h1 { font-size: 30px; }
+            .card { padding: 28px 20px; }
+            .check-row { flex-direction: column; }
+            .btn-secondary { width: 100%; text-align: center; }
+            .header-top { justify-content: center; }
+            .ticket-item .ticket-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -365,79 +330,90 @@
     <div class="container">
 
         <header class="header">
-            <!-- Верхняя строка: только статус -->
             <div class="header-top">
-                <div class="status-badge" id="statusBadge">
+                <div class="status-badge">
                     <span class="status-dot" id="statusDot"></span>
                     <span class="status-text" id="statusText">Проверка...</span>
                 </div>
             </div>
-
-            <div class="badge">✦ Nexus Appeals</div>
-            <h1>Подать апелляцию</h1>
-            <p>Защищённая система обработки обращений</p>
+            <div class="badge">✦ Nexus Support</div>
+            <h1>Служба поддержки</h1>
+            <p>Обращайтесь, мы всегда на связи</p>
         </header>
 
+        <!-- ===== СОЗДАНИЕ ТИКЕТА ===== -->
         <div class="card">
-            <h2>📋 Новая апелляция</h2>
-            <p class="description">Заполните форму. Все данные передаются по защищённому каналу.</p>
+            <h2>📩 Создать обращение</h2>
+            <p class="description">Заполните форму, и наш саппорт свяжется с вами.</p>
 
-            <form id="appealForm">
-                <label for="discord">Discord ID</label>
-                <input type="text" id="discord" placeholder="123456789012345678" required />
+            <form id="ticketForm">
+                <label for="userId">Discord ID</label>
+                <input type="text" id="userId" placeholder="123456789012345678" required />
 
-                <label for="nickname">Discord ник</label>
-                <input type="text" id="nickname" placeholder="Rishat" required />
+                <label for="userName">Discord ник</label>
+                <input type="text" id="userName" placeholder="Rishat" required />
 
-                <label for="reason">Причина апелляции</label>
-                <textarea id="reason" placeholder="Опишите ситуацию подробно..." required></textarea>
+                <label for="subject">Тема обращения</label>
+                <input type="text" id="subject" placeholder="Кратко опишите проблему" required />
 
-                <button type="submit" class="btn-primary" id="submitBtn">🚀 Отправить апелляцию</button>
+                <label for="priority">Приоритет</label>
+                <select id="priority">
+                    <option value="low">🟢 Низкий</option>
+                    <option value="medium" selected>🟡 Средний</option>
+                    <option value="high">🔴 Высокий</option>
+                </select>
+
+                <!-- ===== КАТЕГОРИЯ (НОВОЕ) ===== -->
+                <label for="category">Категория обращения</label>
+                <select id="category" required>
+                    <option value="technical">🖥️ Техническая проблема</option>
+                    <option value="financial">💳 Финансовый вопрос</option>
+                    <option value="gameplay">🎮 Игровой вопрос</option>
+                    <option value="moderation">🛡️ Модерация</option>
+                    <option value="other">📌 Другое</option>
+                </select>
+
+                <label for="message">Сообщение</label>
+                <textarea id="message" placeholder="Опишите вашу проблему подробно..." required></textarea>
+
+                <button type="submit" class="btn-primary" id="submitBtn">📨 Отправить обращение</button>
             </form>
 
             <div id="status" class="status">
                 <div class="status-title" id="statusTitle"></div>
                 <div id="statusText"></div>
             </div>
+        </div>
 
-            <hr class="divider" />
+        <!-- ===== ПРОВЕРКА СТАТУСА ===== -->
+        <div class="card">
+            <h2>🔍 Проверить статус</h2>
+            <p class="description">Введите номер тикета (TK-000001) или ваш Discord ID.</p>
 
-            <div class="status-check">
-                <h2>🔍 Проверить статус</h2>
-                <p class="description">Введите номер апелляции, чтобы узнать текущий статус.</p>
+            <div class="check-row">
+                <input type="text" id="checkNumber" placeholder="TK-000001 или Discord ID" />
+                <button class="btn-secondary" onclick="checkTicket()">Проверить</button>
+            </div>
 
-                <div class="check-row">
-                    <input type="text" id="checkNumber" placeholder="AP-000001" />
-                    <button class="btn-secondary" onclick="checkStatus()">Проверить</button>
-                </div>
-
-                <div id="statusResult" class="status-result">
-                    <div id="statusResultContent"></div>
-                </div>
+            <div id="statusResult" class="status-result">
+                <div id="statusResultContent"></div>
             </div>
         </div>
 
         <footer class="footer">
-            <span>✦</span> Nexus Appeals • Защищённая система <span>✦</span>
+            <span>✦</span> Nexus Support • Круглосуточная поддержка <span>✦</span>
         </footer>
     </div>
 
     <script>
         const API_URL = 'https://appeal-site-production.up.railway.app';
 
-        // ==========================================
-        // ИНДИКАТОР СТАТУСА
-        // ==========================================
+        // ===== СТАТУС =====
         async function checkServerStatus() {
             const dot = document.getElementById('statusDot');
             const text = document.getElementById('statusText');
-
             try {
-                const response = await fetch(`${API_URL}/`, {
-                    method: 'GET',
-                    signal: AbortSignal.timeout(5000) // таймаут 5 секунд
-                });
-
+                const response = await fetch(`${API_URL}/`, { signal: AbortSignal.timeout(5000) });
                 if (response.ok) {
                     dot.className = 'status-dot online';
                     text.textContent = 'Онлайн';
@@ -445,22 +421,16 @@
                     dot.className = 'status-dot offline';
                     text.textContent = 'Офлайн';
                 }
-            } catch (error) {
+            } catch {
                 dot.className = 'status-dot offline';
                 text.textContent = 'Офлайн';
             }
         }
-
-        // Проверяем при загрузке
         checkServerStatus();
-
-        // Проверяем каждые 30 секунд
         setInterval(checkServerStatus, 30000);
 
-        // ==========================================
-        // ОТПРАВКА АПЕЛЛЯЦИИ
-        // ==========================================
-        const form = document.getElementById('appealForm');
+        // ===== ОТПРАВКА ТИКЕТА =====
+        const form = document.getElementById('ticketForm');
         const statusBox = document.getElementById('status');
         const statusTitle = document.getElementById('statusTitle');
         const statusText = document.getElementById('statusText');
@@ -469,11 +439,14 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const discord = document.getElementById('discord').value.trim();
-            const nickname = document.getElementById('nickname').value.trim();
-            const reason = document.getElementById('reason').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+            const userName = document.getElementById('userName').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+            const priority = document.getElementById('priority').value;
+            const category = document.getElementById('category').value; // ← КАТЕГОРИЯ
 
-            if (!discord || !nickname || !reason) {
+            if (!userId || !userName || !subject || !message) {
                 showStatus('error', 'Ошибка', 'Заполните все поля.');
                 return;
             }
@@ -482,27 +455,35 @@
             submitBtn.textContent = '⏳ Отправка...';
 
             try {
-                const response = await fetch(`${API_URL}/api/appeals`, {
+                const response = await fetch(`${API_URL}/api/tickets`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ discord, nickname, punishment: 'Не указано', reason })
+                    body: JSON.stringify({ 
+                        userId, 
+                        userName, 
+                        subject, 
+                        message, 
+                        priority,
+                        category  // ← ОТПРАВЛЯЕМ КАТЕГОРИЮ
+                    })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    showStatus('success', '✅ Апелляция отправлена!',
-                        `Ваш номер: <strong>${result.appealNumber}</strong><br>Сохраните его для проверки статуса.`
+                    showStatus('success', '✅ Обращение создано!',
+                        `Номер: <strong style="font-size:24px;color:#5865f2;">${result.ticketNumber}</strong><br>Сохраните его для проверки статуса.`
                     );
                     form.reset();
                 } else {
                     showStatus('error', '❌ Ошибка', result.message || 'Не удалось отправить.');
                 }
-            } catch {
+            } catch (error) {
+                console.error('Ошибка:', error);
                 showStatus('error', '❌ Ошибка соединения', 'Сервер временно недоступен.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = '🚀 Отправить апелляцию';
+                submitBtn.textContent = '📨 Отправить обращение';
             }
         });
 
@@ -512,57 +493,100 @@
             statusText.innerHTML = text;
         }
 
-        // ==========================================
-        // ПРОВЕРКА СТАТУСА
-        // ==========================================
-        async function checkStatus() {
-            const number = document.getElementById('checkNumber').value.trim();
+        // ===== ПРОВЕРКА ТИКЕТА =====
+        async function checkTicket() {
+            const input = document.getElementById('checkNumber').value.trim();
             const resultDiv = document.getElementById('statusResult');
             const contentDiv = document.getElementById('statusResultContent');
 
-            if (!number) {
+            if (!input) {
                 resultDiv.style.display = 'block';
                 resultDiv.style.border = '1px solid #ed4245';
-                contentDiv.innerHTML = '❌ Введите номер апелляции';
+                contentDiv.innerHTML = '❌ Введите номер тикета или Discord ID';
                 return;
             }
 
             try {
-                const response = await fetch(`${API_URL}/api/appeals/${number}`);
+                let url;
+                let isUserId = /^\d+$/.test(input) && input.length > 10;
+
+                if (isUserId) {
+                    url = `${API_URL}/api/tickets/user/${input}`;
+                } else {
+                    url = `${API_URL}/api/tickets/${input}`;
+                }
+
+                const response = await fetch(url);
                 const result = await response.json();
 
                 resultDiv.style.display = 'block';
 
                 if (result.success) {
-                    const appeal = result.appeal;
-                    let statusText, statusColor;
-
-                    switch (appeal.status) {
-                        case 'approved':
-                            statusText = '🟢 Одобрена';
-                            statusColor = '#57f287';
-                            break;
-                        case 'rejected':
-                            statusText = '🔴 Отклонена';
-                            statusColor = '#ed4245';
-                            break;
-                        default:
-                            statusText = '🟡 На рассмотрении';
-                            statusColor = '#f0b400';
+                    if (Array.isArray(result.tickets)) {
+                        if (result.tickets.length === 0) {
+                            contentDiv.innerHTML = '📭 У вас пока нет обращений.';
+                            return;
+                        }
+                        let html = '<div style="margin-bottom:12px;font-weight:600;">📋 Ваши обращения:</div>';
+                        result.tickets.forEach(t => {
+                            const statusMap = {
+                                'open': '🟢 Открыт',
+                                'in_progress': '🟡 В работе',
+                                'closed': '🔴 Закрыт'
+                            };
+                            const catNames = {
+                                'technical': '🖥️ Техническая',
+                                'financial': '💳 Финансы',
+                                'gameplay': '🎮 Игровой',
+                                'moderation': '🛡️ Модерация',
+                                'other': '📌 Другое'
+                            };
+                            html += `
+                                <div class="ticket-item">
+                                    <div class="ticket-header">
+                                        <span class="ticket-subject">${t.subject}</span>
+                                        <span class="ticket-status ${t.status}">${statusMap[t.status] || t.status}</span>
+                                    </div>
+                                    <div class="ticket-meta">
+                                        ${t.ticket_number} • ${catNames[t.category] || t.category} • ${new Date(t.created_at).toLocaleDateString('ru-RU')}
+                                        ${t.assigned_name ? `• 🛠️ ${t.assigned_name}` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contentDiv.innerHTML = html;
+                    } else {
+                        const t = result.ticket;
+                        const statusMap = {
+                            'open': '🟢 Открыт',
+                            'in_progress': '🟡 В работе',
+                            'closed': '🔴 Закрыт'
+                        };
+                        const catNames = {
+                            'technical': '🖥️ Техническая проблема',
+                            'financial': '💳 Финансовый вопрос',
+                            'gameplay': '🎮 Игровой вопрос',
+                            'moderation': '🛡️ Модерация',
+                            'other': '📌 Другое'
+                        };
+                        contentDiv.innerHTML = `
+                            <div style="font-weight:600;margin-bottom:8px;">📌 ${t.subject}</div>
+                            <div style="color:#8892a8;margin-bottom:4px;">Номер: ${t.ticket_number}</div>
+                            <div style="color:#8892a8;margin-bottom:4px;">Статус: ${statusMap[t.status] || t.status}</div>
+                            <div style="color:#8892a8;margin-bottom:4px;">Категория: ${catNames[t.category] || t.category}</div>
+                            <div style="color:#8892a8;margin-bottom:4px;">Приоритет: ${t.priority || 'средний'}</div>
+                            <div style="color:#8892a8;margin-bottom:8px;">Сообщение: ${t.message || '—'}</div>
+                            ${t.assigned_name ? `<div style="color:#8892a8;">🛠️ Модератор: ${t.assigned_name}</div>` : ''}
+                            ${t.closed_at ? `<div style="color:#8892a8;">🔒 Закрыт: ${new Date(t.closed_at).toLocaleDateString('ru-RU')}</div>` : ''}
+                        `;
                     }
-
-                    resultDiv.style.border = `1px solid ${statusColor}`;
-                    contentDiv.innerHTML = `
-                        <div style="font-weight:700;margin-bottom:8px;">Статус: <span style="color:${statusColor};">${statusText}</span></div>
-                        <div style="color:#8892a8;margin-bottom:4px;">📝 Причина: ${appeal.reason || '—'}</div>
-                        <div style="color:#8892a8;margin-bottom:4px;">📌 Решение: ${appeal.decision_reason || 'Ожидает'}</div>
-                        <div style="color:#8892a8;">👤 Модератор: ${appeal.moderator_username || '—'}</div>
-                    `;
+                    resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
                 } else {
                     resultDiv.style.border = '1px solid #ed4245';
-                    contentDiv.innerHTML = '❌ Апелляция не найдена. Проверьте номер.';
+                    contentDiv.innerHTML = '❌ Ничего не найдено. Проверьте номер или ID.';
                 }
-            } catch {
+            } catch (error) {
+                console.error('Ошибка проверки:', error);
                 resultDiv.style.display = 'block';
                 resultDiv.style.border = '1px solid #ed4245';
                 contentDiv.innerHTML = '❌ Ошибка соединения с сервером.';
