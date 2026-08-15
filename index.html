@@ -1,153 +1,223 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Апелляции</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>✨ Nexus Appeals — Premium System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #0b0f14;
-            color: white;
+            font-family: 'Inter', sans-serif;
+            background: #05080f;
+            color: #f0f4ff;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: radial-gradient(ellipse at 20% 30%, #0d1a2b, #05080f 70%);
         }
 
-        .header {
-            padding: 25px;
-            text-align: center;
-            border-bottom: 1px solid #202832;
-            background: #0e131a;
-        }
-
-        .header h1 {
-            font-size: 30px;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #9ba6b2;
+        .glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.08) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .container {
-            width: 90%;
-            max-width: 700px;
-            margin: 50px auto;
+            width: 100%;
+            max-width: 720px;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: rgba(88, 101, 242, 0.15);
+            color: #8b9aff;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            padding: 6px 18px;
+            border-radius: 100px;
+            border: 1px solid rgba(88, 101, 242, 0.25);
+            backdrop-filter: blur(4px);
+            margin-bottom: 18px;
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            font-size: 44px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f0f4ff 0%, #8b9aff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: #8892a8;
+            font-size: 17px;
+            margin-top: 10px;
+            font-weight: 400;
         }
 
         .card {
-            background: #111720;
-            border: 1px solid #252e39;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            background: rgba(16, 24, 36, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 40px 36px;
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(88, 101, 242, 0.2);
+            box-shadow: 0 40px 80px -20px rgba(88, 101, 242, 0.15), 0 0 0 1px rgba(88, 101, 242, 0.05) inset;
         }
 
         .card h2 {
-            margin-bottom: 10px;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
         }
 
-        .description {
-            color: #9ba6b2;
-            margin-bottom: 25px;
+        .card .description {
+            color: #8892a8;
+            font-size: 15px;
+            margin-bottom: 28px;
+            font-weight: 400;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #b0bbd4;
+            margin-bottom: 6px;
         }
 
         input,
         textarea {
             width: 100%;
-            background: #0b1016;
-            border: 1px solid #303b48;
-            border-radius: 8px;
-            color: white;
-            padding: 13px;
-            margin-bottom: 20px;
+            background: rgba(10, 16, 26, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            color: #f0f4ff;
+            padding: 14px 18px;
+            margin-bottom: 22px;
             outline: none;
             font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: 0.25s ease;
+            backdrop-filter: blur(4px);
         }
 
         input:focus,
         textarea:focus {
             border-color: #5865f2;
+            background: rgba(10, 16, 26, 0.8);
+            box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.1);
         }
 
         textarea {
-            min-height: 150px;
+            min-height: 130px;
             resize: vertical;
         }
 
-        button {
+        .btn-primary {
             width: 100%;
             border: none;
-            border-radius: 8px;
-            padding: 14px;
-            background: #5865f2;
+            border-radius: 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, #5865f2, #4752c4);
             color: white;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.25s ease;
+            box-shadow: 0 4px 14px rgba(88, 101, 242, 0.3);
+            letter-spacing: 0.3px;
         }
 
-        button:hover {
-            background: #4752c4;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
         }
 
-        button:disabled {
-            opacity: 0.6;
+        .btn-primary:disabled {
+            opacity: 0.5;
+            transform: none;
             cursor: not-allowed;
         }
 
         .status {
-            margin-top: 25px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #151c25;
+            margin-top: 24px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.02);
             display: none;
+            border: 1px solid transparent;
         }
 
         .status.success {
             display: block;
-            border: 1px solid #248046;
+            border-color: rgba(87, 242, 135, 0.25);
+            background: rgba(87, 242, 135, 0.04);
         }
 
         .status.error {
             display: block;
-            border: 1px solid #ed4245;
+            border-color: rgba(237, 66, 69, 0.25);
+            background: rgba(237, 66, 69, 0.04);
         }
 
         .status-title {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
         }
 
-        .status-check {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #252e39;
+        .divider {
+            margin: 40px 0 30px;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
         }
 
         .status-check h2 {
-            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
         }
 
         .status-check .description {
+            color: #8892a8;
+            font-size: 15px;
             margin-bottom: 20px;
         }
 
         .check-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .check-row input {
@@ -155,22 +225,32 @@
             margin-bottom: 0;
         }
 
-        .check-row button {
-            width: auto;
-            padding: 13px 30px;
-            background: #2b2d42;
+        .btn-secondary {
+            border: none;
+            border-radius: 16px;
+            padding: 14px 28px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #f0f4ff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
         }
 
-        .check-row button:hover {
-            background: #3d405b;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.08);
         }
 
         .status-result {
             margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #151c25;
+            padding: 18px 22px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.02);
             display: none;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
         .status-result.visible {
@@ -179,51 +259,79 @@
 
         .footer {
             text-align: center;
-            color: #687481;
-            padding: 30px;
+            color: #3d4659;
+            padding: 40px 0 30px;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        .footer span {
+            color: #5865f2;
         }
 
         @media (max-width: 600px) {
+            .header h1 {
+                font-size: 30px;
+            }
+
+            .card {
+                padding: 28px 20px;
+            }
+
             .check-row {
                 flex-direction: column;
             }
 
-            .check-row button {
+            .btn-secondary {
                 width: 100%;
+                justify-content: center;
+                text-align: center;
             }
+        }
+
+        /* Scroll */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05080f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2a3a;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2a3a50;
         }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <h1>📝 Апелляции</h1>
-        <p>Подайте апелляцию, если считаете наказание несправедливым</p>
-    </header>
+    <div class="glow"></div>
 
-    <main class="container">
+    <div class="container">
+
+        <header class="header">
+            <div class="badge">✦ Nexus Appeals</div>
+            <h1>Подать апелляцию</h1>
+            <p>Защищённая система обработки обращений</p>
+        </header>
 
         <div class="card">
-
-            <h2>Подать апелляцию</h2>
-
-            <p class="description">
-                Заполните форму ниже. Ваша апелляция будет рассмотрена администрацией.
-            </p>
+            <h2>📋 Новая апелляция</h2>
+            <p class="description">Заполните форму. Все данные передаются по защищённому каналу.</p>
 
             <form id="appealForm">
-
                 <label for="discord">Discord ID</label>
-                <input type="text" id="discord" placeholder="Например: 123456789012345678" required>
+                <input type="text" id="discord" placeholder="123456789012345678" required />
 
                 <label for="nickname">Discord ник</label>
-                <input type="text" id="nickname" placeholder="Например: Rishat" required>
+                <input type="text" id="nickname" placeholder="Rishat" required />
 
                 <label for="reason">Причина апелляции</label>
-                <textarea id="reason" placeholder="Расскажите, почему вы хотите обжаловать наказание..." required></textarea>
+                <textarea id="reason" placeholder="Опишите ситуацию подробно..." required></textarea>
 
-                <button type="submit" id="submitBtn">Отправить апелляцию</button>
-
+                <button type="submit" class="btn-primary" id="submitBtn">🚀 Отправить апелляцию</button>
             </form>
 
             <div id="status" class="status">
@@ -231,103 +339,74 @@
                 <div id="statusText"></div>
             </div>
 
-            <!-- ========================================== -->
-            <!-- БЛОК ПРОВЕРКИ СТАТУСА                      -->
-            <!-- ========================================== -->
+            <hr class="divider" />
+
             <div class="status-check">
-
                 <h2>🔍 Проверить статус</h2>
-
-                <p class="description">
-                    Введите номер апелляции, чтобы узнать её статус.
-                </p>
+                <p class="description">Введите номер апелляции, чтобы узнать текущий статус.</p>
 
                 <div class="check-row">
-                    <input type="text" id="checkNumber" placeholder="Например: AP-000001">
-                    <button onclick="checkStatus()">Проверить</button>
+                    <input type="text" id="checkNumber" placeholder="AP-000001" />
+                    <button class="btn-secondary" onclick="checkStatus()">Проверить</button>
                 </div>
 
                 <div id="statusResult" class="status-result">
                     <div id="statusResultContent"></div>
                 </div>
-
             </div>
-
         </div>
 
-    </main>
-
-    <footer class="footer">
-        Система апелляций
-    </footer>
+        <footer class="footer">
+            <span>✦</span> Nexus Appeals • Защищённая система <span>✦</span>
+        </footer>
+    </div>
 
     <script>
-        // ==========================================
-        // НАСТРОЙКА API
-        // ==========================================
         const API_URL = 'https://appeal-site-production.up.railway.app';
 
-        // ==========================================
-        // ОТПРАВКА АПЕЛЛЯЦИИ
-        // ==========================================
         const form = document.getElementById('appealForm');
         const statusBox = document.getElementById('status');
         const statusTitle = document.getElementById('statusTitle');
         const statusText = document.getElementById('statusText');
         const submitBtn = document.getElementById('submitBtn');
 
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault();
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
             const discord = document.getElementById('discord').value.trim();
             const nickname = document.getElementById('nickname').value.trim();
             const reason = document.getElementById('reason').value.trim();
 
             if (!discord || !nickname || !reason) {
-                showStatus('error', 'Ошибка', 'Пожалуйста, заполните все поля.');
+                showStatus('error', 'Ошибка', 'Заполните все поля.');
                 return;
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Отправка...';
+            submitBtn.textContent = '⏳ Отправка...';
 
             try {
                 const response = await fetch(`${API_URL}/api/appeals`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        discord: discord,
-                        nickname: nickname,
-                        punishment: 'Не указано',
-                        reason: reason
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ discord, nickname, punishment: 'Не указано', reason })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    showStatus(
-                        'success',
-                        '✅ Апелляция отправлена!',
-                        `Ваш номер: <strong>${result.appealNumber}</strong><br>Скопируйте его, чтобы проверить статус.`
+                    showStatus('success', '✅ Апелляция отправлена!',
+                        `Ваш номер: <strong>${result.appealNumber}</strong><br>Сохраните его для проверки статуса.`
                     );
                     form.reset();
                 } else {
-                    showStatus('error', '❌ Ошибка', result.message || 'Не удалось отправить апелляцию.');
+                    showStatus('error', '❌ Ошибка', result.message || 'Не удалось отправить.');
                 }
-
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showStatus(
-                    'error',
-                    '❌ Ошибка соединения',
-                    'Не удалось связаться с сервером. Проверьте подключение.'
-                );
+            } catch {
+                showStatus('error', '❌ Ошибка соединения', 'Сервер временно недоступен.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Отправить апелляцию';
+                submitBtn.textContent = '🚀 Отправить апелляцию';
             }
         });
 
@@ -337,9 +416,7 @@
             statusText.innerHTML = text;
         }
 
-        // ==========================================
-        // ПРОВЕРКА СТАТУСА
-        // ==========================================
+        // Проверка статуса
         async function checkStatus() {
             const number = document.getElementById('checkNumber').value.trim();
             const resultDiv = document.getElementById('statusResult');
@@ -360,40 +437,37 @@
 
                 if (result.success) {
                     const appeal = result.appeal;
-                    let statusText = '🟡 На рассмотрении';
-                    let statusColor = '#f0b400';
+                    let statusText, statusColor;
 
-                    if (appeal.status === 'approved') {
-                        statusText = '🟢 Одобрена';
-                        statusColor = '#57f287';
-                    } else if (appeal.status === 'rejected') {
-                        statusText = '🔴 Отклонена';
-                        statusColor = '#ed4245';
+                    switch (appeal.status) {
+                        case 'approved':
+                            statusText = '🟢 Одобрена';
+                            statusColor = '#57f287';
+                            break;
+                        case 'rejected':
+                            statusText = '🔴 Отклонена';
+                            statusColor = '#ed4245';
+                            break;
+                        default:
+                            statusText = '🟡 На рассмотрении';
+                            statusColor = '#f0b400';
                     }
 
                     resultDiv.style.border = `1px solid ${statusColor}`;
                     contentDiv.innerHTML = `
-                        <div style="font-weight: bold; margin-bottom: 10px;">
-                            Статус: <span style="color: ${statusColor};">${statusText}</span>
-                        </div>
-                        <div style="color: #9ba6b2; margin-bottom: 5px;">
-                            📝 Причина: ${appeal.reason || '—'}
-                        </div>
-                        <div style="color: #9ba6b2; margin-bottom: 5px;">
-                            📌 Решение: ${appeal.decision_reason || 'Ожидает'}
-                        </div>
-                        <div style="color: #9ba6b2;">
-                            👤 Модератор: ${appeal.moderator_username || '—'}
-                        </div>
+                        <div style="font-weight:700;margin-bottom:8px;">Статус: <span style="color:${statusColor};">${statusText}</span></div>
+                        <div style="color:#8892a8;margin-bottom:4px;">📝 Причина: ${appeal.reason || '—'}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">📌 Решение: ${appeal.decision_reason || 'Ожидает'}</div>
+                        <div style="color:#8892a8;">👤 Модератор: ${appeal.moderator_username || '—'}</div>
                     `;
                 } else {
                     resultDiv.style.border = '1px solid #ed4245';
                     contentDiv.innerHTML = '❌ Апелляция не найдена. Проверьте номер.';
                 }
-            } catch (error) {
+            } catch {
                 resultDiv.style.display = 'block';
                 resultDiv.style.border = '1px solid #ed4245';
-                contentDiv.innerHTML = '❌ Ошибка соединения с сервером';
+                contentDiv.innerHTML = '❌ Ошибка соединения с сервером.';
             }
         }
     </script>
