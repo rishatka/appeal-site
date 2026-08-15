@@ -111,23 +111,25 @@ app.post("/api/appeals", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В DISCORD
+        // ОТПРАВКА В DISCORD (НОВЫЙ ДИЗАЙН)
         // ============================
         try {
             const channel = await discordClient.channels.fetch(APPEAL_CHANNEL_ID);
             
             if (channel) {
                 const embed = new EmbedBuilder()
-                    .setTitle("📝 Новая апелляция")
+                    .setTitle('✦ Новая апелляция')
                     .setColor(0x5865F2)
+                    .setThumbnail('https://cdn.discordapp.com/embed/avatars/0.png')
+                    .setDescription(`**${nickname}** подал(а) апелляцию.`)
                     .addFields(
-                        { name: "Номер", value: `\`${appealNumber}\``, inline: true },
-                        { name: "Discord", value: `<@${discord}>`, inline: true },
-                        { name: "Ник", value: nickname, inline: true },
-                        { name: "Наказание", value: punishment },
-                        { name: "Причина", value: reason },
-                        { name: "Статус", value: "🟡 На рассмотрении" }
+                        { name: '📌 Номер', value: `\`${appealNumber}\``, inline: true },
+                        { name: '🆔 Discord ID', value: `<@${discord}>`, inline: true },
+                        { name: '👤 Ник', value: nickname, inline: true },
+                        { name: '📝 Причина', value: reason.length > 500 ? reason.slice(0, 500) + '…' : reason },
+                        { name: '⏳ Статус', value: '🟡 На рассмотрении', inline: true }
                     )
+                    .setFooter({ text: 'Nexus Appeals • Защищённая система', iconURL: 'https://cdn.discordapp.com/embed/avatars/0.png' })
                     .setTimestamp();
 
                 const buttons = new ActionRowBuilder()
@@ -318,14 +320,14 @@ async function decideAppeal(interaction, id, status, decisionReason) {
             .setColor(status === "approved" ? 0x57F287 : 0xED4245);
 
         const fields = newEmbed.data.fields || [];
-        const statusField = fields.find(field => field.name === "Статус");
+        const statusField = fields.find(field => field.name === "⏳ Статус");
         if (statusField) {
             statusField.value = status === "approved" ? "🟢 Одобрена" : "🔴 Отклонена";
         }
 
         newEmbed.addFields(
-            { name: "Решение", value: decisionReason },
-            { name: "Модератор", value: `<@${moderator.id}>` }
+            { name: "📌 Решение", value: decisionReason },
+            { name: "👤 Модератор", value: `<@${moderator.id}>` }
         );
 
         await message.edit({
