@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Апелляции</title>
-
     <style>
         * {
             box-sizing: border-box;
@@ -98,10 +96,16 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         button:hover {
             background: #4752c4;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .status {
@@ -134,7 +138,6 @@
         }
     </style>
 </head>
-
 <body>
 
     <header class="header">
@@ -154,41 +157,16 @@
 
             <form id="appealForm">
 
-                <label for="discord">
-                    Discord ID
-                </label>
+                <label for="discord">Discord ID</label>
+                <input type="text" id="discord" placeholder="Например: 123456789012345678" required>
 
-                <input
-                    type="text"
-                    id="discord"
-                    placeholder="Например: 123456789012345678"
-                    required
-                >
+                <label for="nickname">Discord ник</label>
+                <input type="text" id="nickname" placeholder="Например: Rishat" required>
 
-                <label for="nickname">
-                    Discord ник
-                </label>
+                <label for="reason">Причина апелляции</label>
+                <textarea id="reason" placeholder="Расскажите, почему вы хотите обжаловать наказание..." required></textarea>
 
-                <input
-                    type="text"
-                    id="nickname"
-                    placeholder="Например: Rishat"
-                    required
-                >
-
-                <label for="reason">
-                    Причина апелляции
-                </label>
-
-                <textarea
-                    id="reason"
-                    placeholder="Расскажите, почему вы хотите обжаловать наказание..."
-                    required
-                ></textarea>
-
-                <button type="submit">
-                    Отправить апелляцию
-                </button>
+                <button type="submit" id="submitBtn">Отправить апелляцию</button>
 
             </form>
 
@@ -205,57 +183,79 @@
         Система апелляций
     </footer>
 
-
     <script>
+        // ======================================
+        // ⚠️ ВСТАВЬТЕ СВОЙ URL ИЗ RAILWAY!
+        // ======================================
+        const API_URL = 'https://ваш-сайт.up.railway.app'; // ← ЗАМЕНИТЕ НА ВАШ URL
 
-        const form = document.getElementById("appealForm");
+        const form = document.getElementById('appealForm');
+        const statusBox = document.getElementById('status');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusText = document.getElementById('statusText');
+        const submitBtn = document.getElementById('submitBtn');
 
-        const statusBox = document.getElementById("status");
-        const statusTitle = document.getElementById("statusTitle");
-        const statusText = document.getElementById("statusText");
-
-
-        form.addEventListener("submit", function(event) {
-
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const discord = document.getElementById("discord").value;
-            const nickname = document.getElementById("nickname").value;
-            const reason = document.getElementById("reason").value;
-
+            const discord = document.getElementById('discord').value.trim();
+            const nickname = document.getElementById('nickname').value.trim();
+            const reason = document.getElementById('reason').value.trim();
 
             if (!discord || !nickname || !reason) {
-
-                statusBox.className = "status error";
-
-                statusTitle.textContent = "Ошибка";
-
-                statusText.textContent =
-                    "Пожалуйста, заполните все поля.";
-
+                showStatus('error', 'Ошибка', 'Пожалуйста, заполните все поля.');
                 return;
             }
 
+            // Блокируем кнопку
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
 
-            /*
-                Пока что это тестовая версия.
+            try {
+                const response = await fetch(`${API_URL}/api/appeals`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        discord: discord,
+                        nickname: nickname,
+                        punishment: 'Не указано',
+                        reason: reason
+                    })
+                });
 
-                Позже здесь мы подключим сервер,
-                который отправит апелляцию в Discord.
-            */
+                const result = await response.json();
 
+                if (result.success) {
+                    showStatus(
+                        'success',
+                        '✅ Апелляция отправлена!',
+                        `Ваш номер: <strong>${result.appealNumber}</strong><br>Скопируйте его, чтобы проверить статус.`
+                    );
+                    form.reset();
+                } else {
+                    showStatus('error', '❌ Ошибка', result.message || 'Не удалось отправить апелляцию.');
+                }
 
-            statusBox.className = "status success";
-
-            statusTitle.textContent = "Апелляция отправлена!";
-
-            statusText.textContent =
-                "Ваша апелляция принята и ожидает рассмотрения администрацией.";
-
-            form.reset();
-
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showStatus(
+                    'error',
+                    '❌ Ошибка соединения',
+                    'Не удалось связаться с сервером. Проверьте подключение к интернету.'
+                );
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить апелляцию';
+            }
         });
 
+        function showStatus(type, title, text) {
+            statusBox.className = `status ${type}`;
+            statusTitle.textContent = title;
+            statusText.innerHTML = text;
+        }
     </script>
 
 </body>
