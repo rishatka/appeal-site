@@ -12,7 +12,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || "1538206195238572142";
-const GUILD_ID = process.env.GUILD_ID; // ID вашего сервера
+const GUILD_ID = process.env.GUILD_ID;
 
 // ============================
 // КАТЕГОРИИ И КАНАЛЫ
@@ -85,7 +85,7 @@ app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 // ============================
-// ФУНКЦИЯ СОЗДАНИЯ КАНАЛОВ
+// ФУНКЦИЯ СОЗДАНИЯ КАНАЛОВ (ИСПРАВЛЕНА)
 // ============================
 async function setupChannels() {
     if (!GUILD_ID) {
@@ -114,17 +114,7 @@ async function setupChannels() {
             console.log("📁 Создаю категорию 'Тикеты'...");
             ticketCategory = await guild.channels.create({
                 name: "Тикеты",
-                type: ChannelType.GuildCategory,
-                permissionOverwrites: [
-                    {
-                        id: guild.id,
-                        deny: [PermissionsBitField.Flags.ViewChannel],
-                    },
-                    {
-                        id: STAFF_ROLE_ID,
-                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
-                    }
-                ]
+                type: ChannelType.GuildCategory
             });
             console.log(`✅ Категория создана: ${ticketCategory.name}`);
         } else {
@@ -144,17 +134,7 @@ async function setupChannels() {
                 channel = await guild.channels.create({
                     name: channelName,
                     type: ChannelType.GuildText,
-                    parent: ticketCategory.id,
-                    permissionOverwrites: [
-                        {
-                            id: guild.id,
-                            deny: [PermissionsBitField.Flags.ViewChannel],
-                        },
-                        {
-                            id: STAFF_ROLE_ID,
-                            allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
-                        }
-                    ]
+                    parent: ticketCategory.id
                 });
                 console.log(`✅ Канал создан: #${channel.name} (ID: ${channel.id})`);
             } else {
@@ -323,7 +303,7 @@ app.post("/api/tickets", async (req, res) => {
 });
 
 // ============================
-// ОСТАЛЬНЫЕ ЭНДПОЙНТЫ
+// ПОЛУЧЕНИЕ ТИКЕТА ПО НОМЕРУ
 // ============================
 app.get("/api/tickets/:number", async (req, res) => {
     try {
@@ -356,6 +336,9 @@ app.get("/api/tickets/:number", async (req, res) => {
     }
 });
 
+// ============================
+// ПОЛУЧЕНИЕ ТИКЕТОВ ПОЛЬЗОВАТЕЛЯ
+// ============================
 app.get("/api/tickets/user/:userId", async (req, res) => {
     try {
         const userId = req.params.userId;
