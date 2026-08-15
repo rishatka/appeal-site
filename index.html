@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Апелляции</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0b0f14;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid #202832;
+            background: #0e131a;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #9ba6b2;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            margin: 50px auto;
+        }
+
+        .card {
+            background: #111720;
+            border: 1px solid #252e39;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .card h2 {
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #9ba6b2;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            background: #0b1016;
+            border: 1px solid #303b48;
+            border-radius: 8px;
+            color: white;
+            padding: 13px;
+            margin-bottom: 20px;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #5865f2;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            background: #5865f2;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4752c4;
+        }
+
+        .status {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #151c25;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            border: 1px solid #248046;
+        }
+
+        .status.error {
+            display: block;
+            border: 1px solid #ed4245;
+        }
+
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #687481;
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>📝 Апелляции</h1>
+        <p>Подайте апелляцию, если считаете наказание несправедливым</p>
+    </header>
+
+    <main class="container">
+
+        <div class="card">
+
+            <h2>Подать апелляцию</h2>
+
+            <p class="description">
+                Заполните форму ниже. Ваша апелляция будет рассмотрена администрацией.
+            </p>
+
+            <form id="appealForm">
+
+                <label for="discord">
+                    Discord ID
+                </label>
+
+                <input
+                    type="text"
+                    id="discord"
+                    placeholder="Например: 123456789012345678"
+                    required
+                >
+
+                <label for="nickname">
+                    Discord ник
+                </label>
+
+                <input
+                    type="text"
+                    id="nickname"
+                    placeholder="Например: Rishat"
+                    required
+                >
+
+                <label for="reason">
+                    Причина апелляции
+                </label>
+
+                <textarea
+                    id="reason"
+                    placeholder="Расскажите, почему вы хотите обжаловать наказание..."
+                    required
+                ></textarea>
+
+                <button type="submit">
+                    Отправить апелляцию
+                </button>
+
+            </form>
+
+            <div id="status" class="status">
+                <div class="status-title" id="statusTitle"></div>
+                <div id="statusText"></div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        Система апелляций
+    </footer>
+
+
+    <script>
+
+        const form = document.getElementById("appealForm");
+
+        const statusBox = document.getElementById("status");
+        const statusTitle = document.getElementById("statusTitle");
+        const statusText = document.getElementById("statusText");
+
+
+        form.addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+            const discord = document.getElementById("discord").value;
+            const nickname = document.getElementById("nickname").value;
+            const reason = document.getElementById("reason").value;
+
+
+            if (!discord || !nickname || !reason) {
+
+                statusBox.className = "status error";
+
+                statusTitle.textContent = "Ошибка";
+
+                statusText.textContent =
+                    "Пожалуйста, заполните все поля.";
+
+                return;
+            }
+
+
+            /*
+                Пока что это тестовая версия.
+
+                Позже здесь мы подключим сервер,
+                который отправит апелляцию в Discord.
+            */
+
+
+            statusBox.className = "status success";
+
+            statusTitle.textContent = "Апелляция отправлена!";
+
+            statusText.textContent =
+                "Ваша апелляция принята и ожидает рассмотрения администрацией.";
+
+            form.reset();
+
+        });
+
+    </script>
+
+</body>
+</html>
