@@ -42,9 +42,58 @@
             z-index: 1;
         }
 
+        /* ===== ШАПКА ===== */
         .header {
             text-align: center;
-            padding: 40px 0 30px;
+            padding: 30px 0 20px;
+            position: relative;
+        }
+
+        /* Верхняя строка: статус справа */
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        /* Индикатор статуса */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 100px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #8892a8;
+            backdrop-filter: blur(8px);
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            background: #4a5568;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-dot.online {
+            background: #57f287;
+            box-shadow: 0 0 12px rgba(87, 242, 135, 0.4);
+        }
+
+        .status-dot.offline {
+            background: #ed4245;
+            box-shadow: 0 0 12px rgba(237, 66, 69, 0.4);
+        }
+
+        .status-text {
+            color: #b0bbd4;
         }
 
         .header .badge {
@@ -78,6 +127,7 @@
             font-weight: 400;
         }
 
+        /* ===== КАРТОЧКА ===== */
         .card {
             background: rgba(16, 24, 36, 0.75);
             backdrop-filter: blur(20px);
@@ -287,9 +337,12 @@
                 justify-content: center;
                 text-align: center;
             }
+
+            .header-top {
+                justify-content: center;
+            }
         }
 
-        /* Scroll */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -312,6 +365,14 @@
     <div class="container">
 
         <header class="header">
+            <!-- Верхняя строка: только статус -->
+            <div class="header-top">
+                <div class="status-badge" id="statusBadge">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Проверка...</span>
+                </div>
+            </div>
+
             <div class="badge">✦ Nexus Appeals</div>
             <h1>Подать апелляцию</h1>
             <p>Защищённая система обработки обращений</p>
@@ -364,6 +425,41 @@
     <script>
         const API_URL = 'https://appeal-site-production.up.railway.app';
 
+        // ==========================================
+        // ИНДИКАТОР СТАТУСА
+        // ==========================================
+        async function checkServerStatus() {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+
+            try {
+                const response = await fetch(`${API_URL}/`, {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000) // таймаут 5 секунд
+                });
+
+                if (response.ok) {
+                    dot.className = 'status-dot online';
+                    text.textContent = 'Онлайн';
+                } else {
+                    dot.className = 'status-dot offline';
+                    text.textContent = 'Офлайн';
+                }
+            } catch (error) {
+                dot.className = 'status-dot offline';
+                text.textContent = 'Офлайн';
+            }
+        }
+
+        // Проверяем при загрузке
+        checkServerStatus();
+
+        // Проверяем каждые 30 секунд
+        setInterval(checkServerStatus, 30000);
+
+        // ==========================================
+        // ОТПРАВКА АПЕЛЛЯЦИИ
+        // ==========================================
         const form = document.getElementById('appealForm');
         const statusBox = document.getElementById('status');
         const statusTitle = document.getElementById('statusTitle');
@@ -416,7 +512,9 @@
             statusText.innerHTML = text;
         }
 
-        // Проверка статуса
+        // ==========================================
+        // ПРОВЕРКА СТАТУСА
+        // ==========================================
         async function checkStatus() {
             const number = document.getElementById('checkNumber').value.trim();
             const resultDiv = document.getElementById('statusResult');
