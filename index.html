@@ -131,10 +131,66 @@
             margin-bottom: 5px;
         }
 
+        .status-check {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #252e39;
+        }
+
+        .status-check h2 {
+            margin-bottom: 10px;
+        }
+
+        .status-check .description {
+            margin-bottom: 20px;
+        }
+
+        .check-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .check-row input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .check-row button {
+            width: auto;
+            padding: 13px 30px;
+            background: #2b2d42;
+        }
+
+        .check-row button:hover {
+            background: #3d405b;
+        }
+
+        .status-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #151c25;
+            display: none;
+        }
+
+        .status-result.visible {
+            display: block;
+        }
+
         .footer {
             text-align: center;
             color: #687481;
             padding: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .check-row {
+                flex-direction: column;
+            }
+
+            .check-row button {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -175,6 +231,28 @@
                 <div id="statusText"></div>
             </div>
 
+            <!-- ========================================== -->
+            <!-- БЛОК ПРОВЕРКИ СТАТУСА                      -->
+            <!-- ========================================== -->
+            <div class="status-check">
+
+                <h2>🔍 Проверить статус</h2>
+
+                <p class="description">
+                    Введите номер апелляции, чтобы узнать её статус.
+                </p>
+
+                <div class="check-row">
+                    <input type="text" id="checkNumber" placeholder="Например: AP-000001">
+                    <button onclick="checkStatus()">Проверить</button>
+                </div>
+
+                <div id="statusResult" class="status-result">
+                    <div id="statusResultContent"></div>
+                </div>
+
+            </div>
+
         </div>
 
     </main>
@@ -184,11 +262,14 @@
     </footer>
 
     <script>
-        // ======================================
-        // ⚠️ ВСТАВЬТЕ СВОЙ URL ИЗ RAILWAY!
-        // ======================================
+        // ==========================================
+        // НАСТРОЙКА API
+        // ==========================================
         const API_URL = 'https://appeal-site-production.up.railway.app';
 
+        // ==========================================
+        // ОТПРАВКА АПЕЛЛЯЦИИ
+        // ==========================================
         const form = document.getElementById('appealForm');
         const statusBox = document.getElementById('status');
         const statusTitle = document.getElementById('statusTitle');
@@ -207,7 +288,6 @@
                 return;
             }
 
-            // Блокируем кнопку
             submitBtn.disabled = true;
             submitBtn.textContent = 'Отправка...';
 
@@ -243,7 +323,7 @@
                 showStatus(
                     'error',
                     '❌ Ошибка соединения',
-                    'Не удалось связаться с сервером. Проверьте подключение к интернету.'
+                    'Не удалось связаться с сервером. Проверьте подключение.'
                 );
             } finally {
                 submitBtn.disabled = false;
@@ -255,6 +335,66 @@
             statusBox.className = `status ${type}`;
             statusTitle.textContent = title;
             statusText.innerHTML = text;
+        }
+
+        // ==========================================
+        // ПРОВЕРКА СТАТУСА
+        // ==========================================
+        async function checkStatus() {
+            const number = document.getElementById('checkNumber').value.trim();
+            const resultDiv = document.getElementById('statusResult');
+            const contentDiv = document.getElementById('statusResultContent');
+
+            if (!number) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.border = '1px solid #ed4245';
+                contentDiv.innerHTML = '❌ Введите номер апелляции';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/appeals/${number}`);
+                const result = await response.json();
+
+                resultDiv.style.display = 'block';
+
+                if (result.success) {
+                    const appeal = result.appeal;
+                    let statusText = '🟡 На рассмотрении';
+                    let statusColor = '#f0b400';
+
+                    if (appeal.status === 'approved') {
+                        statusText = '🟢 Одобрена';
+                        statusColor = '#57f287';
+                    } else if (appeal.status === 'rejected') {
+                        statusText = '🔴 Отклонена';
+                        statusColor = '#ed4245';
+                    }
+
+                    resultDiv.style.border = `1px solid ${statusColor}`;
+                    contentDiv.innerHTML = `
+                        <div style="font-weight: bold; margin-bottom: 10px;">
+                            Статус: <span style="color: ${statusColor};">${statusText}</span>
+                        </div>
+                        <div style="color: #9ba6b2; margin-bottom: 5px;">
+                            📝 Причина: ${appeal.reason || '—'}
+                        </div>
+                        <div style="color: #9ba6b2; margin-bottom: 5px;">
+                            📌 Решение: ${appeal.decision_reason || 'Ожидает'}
+                        </div>
+                        <div style="color: #9ba6b2;">
+                            👤 Модератор: ${appeal.moderator_username || '—'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.style.border = '1px solid #ed4245';
+                    contentDiv.innerHTML = '❌ Апелляция не найдена. Проверьте номер.';
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.border = '1px solid #ed4245';
+                contentDiv.innerHTML = '❌ Ошибка соединения с сервером';
+            }
         }
     </script>
 
