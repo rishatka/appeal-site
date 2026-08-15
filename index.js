@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const { createClient } = require("@supabase/supabase-js");
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } = require("discord.js");
+const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ChannelType, PermissionsBitField } = require("discord.js");
 
 // ============================
 // НАСТРОЙКИ
@@ -11,8 +11,39 @@ const PORT = process.env.PORT || 10000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const TICKET_CHANNEL_ID = process.env.TICKET_CHANNEL_ID || process.env.APPEAL_CHANNEL_ID;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || "1538206195238572142";
+const GUILD_ID = process.env.GUILD_ID; // ID вашего сервера
+
+// ============================
+// КАТЕГОРИИ И КАНАЛЫ
+// ============================
+const CATEGORIES = {
+    'technical': {
+        name: 'Техническая поддержка',
+        emoji: '🖥️',
+        channelName: 'тех-поддержка'
+    },
+    'financial': {
+        name: 'Финансовые вопросы',
+        emoji: '💳',
+        channelName: 'финансы'
+    },
+    'gameplay': {
+        name: 'Игровые вопросы',
+        emoji: '🎮',
+        channelName: 'игровая-поддержка'
+    },
+    'moderation': {
+        name: 'Модерация',
+        emoji: '🛡️',
+        channelName: 'модерация'
+    },
+    'other': {
+        name: 'Общие вопросы',
+        emoji: '📌',
+        channelName: 'общие-вопросы'
+    }
+};
 
 // ============================
 // ПРОВЕРКА ПЕРЕМЕННЫХ
@@ -24,6 +55,10 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 
 if (!DISCORD_TOKEN) {
     console.warn("⚠️ DISCORD_TOKEN не задан — бот не запустится!");
+}
+
+if (!GUILD_ID) {
+    console.warn("⚠️ GUILD_ID не задан! Бот не сможет создавать каналы.");
 }
 
 // ============================
@@ -50,12 +85,107 @@ app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 // ============================
+// ФУНКЦИЯ СОЗДАНИЯ КАНАЛОВ
+// ============================
+async function setupChannels() {
+    if (!GUILD_ID) {
+        console.log("⚠️ GUILD_ID не задан, пропускаем создание каналов");
+        return {};
+    }
+
+    try {
+        const guild = await discordClient.guilds.fetch(GUILD_ID);
+        if (!guild) {
+            console.error("❌ Сервер не найден! Проверьте GUILD_ID");
+            return {};
+        }
+
+        console.log(`✅ Найден сервер: ${guild.name}`);
+        console.log("🏗️ Начинаю настройку каналов...");
+
+        const channelMap = {};
+
+        // Ищем или создаём категорию "Тикеты"
+        let ticketCategory = guild.channels.cache.find(
+            c => c.type === ChannelType.GuildCategory && c.name === "Тикеты"
+        );
+
+        if (!ticketCategory) {
+            console.log("📁 Создаю категорию 'Тикеты'...");
+            ticketCategory = await guild.channels.create({
+                name: "Тикеты",
+                type: ChannelType.GuildCategory,
+                permissionOverwrites: [
+                    {
+                        id: guild.id,
+                        deny: [PermissionsBitField.Flags.ViewChannel],
+                    },
+                    {
+                        id: STAFF_ROLE_ID,
+                        allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
+                    }
+                ]
+            });
+            console.log(`✅ Категория создана: ${ticketCategory.name}`);
+        } else {
+            console.log(`✅ Категория уже существует: ${ticketCategory.name}`);
+        }
+
+        // Создаём каналы для каждой категории
+        for (const [key, cat] of Object.entries(CATEGORIES)) {
+            const channelName = cat.channelName;
+            
+            let channel = guild.channels.cache.find(
+                c => c.name === channelName && c.parentId === ticketCategory.id
+            );
+
+            if (!channel) {
+                console.log(`📢 Создаю канал #${channelName}...`);
+                channel = await guild.channels.create({
+                    name: channelName,
+                    type: ChannelType.GuildText,
+                    parent: ticketCategory.id,
+                    permissionOverwrites: [
+                        {
+                            id: guild.id,
+                            deny: [PermissionsBitField.Flags.ViewChannel],
+                        },
+                        {
+                            id: STAFF_ROLE_ID,
+                            allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
+                        }
+                    ]
+                });
+                console.log(`✅ Канал создан: #${channel.name} (ID: ${channel.id})`);
+            } else {
+                console.log(`✅ Канал уже существует: #${channel.name} (ID: ${channel.id})`);
+            }
+
+            channelMap[key] = channel.id;
+        }
+
+        console.log("✅ Настройка каналов завершена!");
+        return channelMap;
+
+    } catch (error) {
+        console.error("❌ Ошибка при создании каналов:", error.message);
+        return {};
+    }
+}
+
+// ============================
+// ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ КАНАЛОВ
+// ============================
+let CHANNEL_MAP = {};
+
+// ============================
 // ПРОВЕРКА РАБОТЫ
 // ============================
 app.get("/", (req, res) => {
     res.json({
         status: "online",
-        message: "Ticket API is working"
+        message: "Ticket API is working",
+        channels: CHANNEL_MAP
     });
 });
 
@@ -64,16 +194,25 @@ app.get("/", (req, res) => {
 // ============================
 app.post("/api/tickets", async (req, res) => {
     try {
-        const { userId, userName, subject, message, priority } = req.body;
+        const { userId, userName, subject, message, priority, category } = req.body;
 
-        if (!userId || !userName || !subject || !message) {
+        if (!userId || !userName || !subject || !message || !category) {
             return res.status(400).json({
                 success: false,
                 message: "Заполните все поля."
             });
         }
 
-        // Создаем тикет
+        // Проверяем, есть ли канал для этой категории
+        const channelId = CHANNEL_MAP[category];
+        if (!channelId) {
+            return res.status(500).json({
+                success: false,
+                message: "Канал для этой категории не найден. Попробуйте позже."
+            });
+        }
+
+        // Создаем тикет в БД
         const { data, error } = await supabase
             .from("tickets")
             .insert({
@@ -82,6 +221,7 @@ app.post("/api/tickets", async (req, res) => {
                 subject: subject,
                 message: message,
                 priority: priority || 'medium',
+                category: category,
                 status: 'open'
             })
             .select()
@@ -95,7 +235,6 @@ app.post("/api/tickets", async (req, res) => {
             });
         }
 
-        // Создаем номер тикета
         const ticketNumber = "TK-" + String(data.id).padStart(6, "0");
 
         await supabase
@@ -104,17 +243,14 @@ app.post("/api/tickets", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В DISCORD
+        // ОТПРАВКА В КАНАЛ
         // ============================
         try {
-            const channel = await discordClient.channels.fetch(TICKET_CHANNEL_ID);
+            const channel = await discordClient.channels.fetch(channelId);
             
             if (channel) {
-                const priorityEmoji = {
-                    low: '🟢',
-                    medium: '🟡',
-                    high: '🔴'
-                }[priority] || '🟡';
+                const priorityEmoji = { low: '🟢', medium: '🟡', high: '🔴' }[priority] || '🟡';
+                const catInfo = CATEGORIES[category] || CATEGORIES['other'];
 
                 const embed = new EmbedBuilder()
                     .setTitle('🎫 Новый тикет')
@@ -123,15 +259,15 @@ app.post("/api/tickets", async (req, res) => {
                     .addFields(
                         { name: '📌 Номер', value: `\`${ticketNumber}\``, inline: true },
                         { name: '👤 Пользователь', value: `<@${userId}>`, inline: true },
+                        { name: '🏷️ Категория', value: `${catInfo.emoji} ${catInfo.name}`, inline: true },
                         { name: '📊 Приоритет', value: `${priorityEmoji} ${priority || 'medium'}`, inline: true },
                         { name: '📝 Тема', value: subject },
                         { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
                         { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
                     )
-                    .setFooter({ text: 'Ticket System • Защищённая система' })
+                    .setFooter({ text: `Ticket System • ${catInfo.name}` })
                     .setTimestamp();
 
-                // Кнопки для тикета
                 const buttons = new ActionRowBuilder()
                     .addComponents(
                         new ButtonBuilder()
@@ -151,8 +287,7 @@ app.post("/api/tickets", async (req, res) => {
                             .setStyle(ButtonStyle.Success)
                     );
 
-                // Пинг роли саппорта
-                const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
+                const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет в категории ${catInfo.emoji} ${catInfo.name}!`;
 
                 const message = await channel.send({
                     content: content,
@@ -188,7 +323,7 @@ app.post("/api/tickets", async (req, res) => {
 });
 
 // ============================
-// ПОЛУЧЕНИЕ ТИКЕТА ПО НОМЕРУ
+// ОСТАЛЬНЫЕ ЭНДПОЙНТЫ
 // ============================
 app.get("/api/tickets/:number", async (req, res) => {
     try {
@@ -221,9 +356,6 @@ app.get("/api/tickets/:number", async (req, res) => {
     }
 });
 
-// ============================
-// ПОЛУЧЕНИЕ ТИКЕТОВ ПОЛЬЗОВАТЕЛЯ
-// ============================
 app.get("/api/tickets/user/:userId", async (req, res) => {
     try {
         const userId = req.params.userId;
@@ -256,13 +388,12 @@ app.get("/api/tickets/user/:userId", async (req, res) => {
 });
 
 // ============================
-// BUTTON INTERACTIONS (Discord)
+// DISCORD ИНТЕРАКЦИИ
 // ============================
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isButton()) return;
 
-        // Проверка прав (только для саппортов)
         if (!interaction.member || !interaction.member.roles.cache.has(STAFF_ROLE_ID)) {
             return interaction.reply({
                 content: "❌ У вас нет прав для работы с тикетами.",
@@ -273,9 +404,6 @@ discordClient.on("interactionCreate", async (interaction) => {
         const [action, id] = interaction.customId.split("_");
         const ticketId = Number(id);
 
-        // ============================
-        // ВЗЯТЬ ТИКЕТ
-        // ============================
         if (action === "take") {
             const { data, error } = await supabase
                 .from("tickets")
@@ -307,7 +435,6 @@ discordClient.on("interactionCreate", async (interaction) => {
                 })
                 .eq("id", ticketId);
 
-            // Обновляем сообщение в Discord
             const channel = await discordClient.channels.fetch(data.discord_channel_id);
             const message = await channel.messages.fetch(data.discord_message_id);
 
@@ -334,30 +461,7 @@ discordClient.on("interactionCreate", async (interaction) => {
             });
         }
 
-        // ============================
-        // ЗАКРЫТЬ ТИКЕТ
-        // ============================
         if (action === "close") {
-            const { data, error } = await supabase
-                .from("tickets")
-                .select("*")
-                .eq("id", ticketId)
-                .single();
-
-            if (error || !data) {
-                return interaction.reply({
-                    content: "❌ Тикет не найден.",
-                    ephemeral: true
-                });
-            }
-
-            if (data.status === "closed") {
-                return interaction.reply({
-                    content: "⚠️ Тикет уже закрыт.",
-                    ephemeral: true
-                });
-            }
-
             const modal = new ModalBuilder()
                 .setCustomId(`close_reason_${ticketId}`)
                 .setTitle("Закрытие тикета");
@@ -373,9 +477,6 @@ discordClient.on("interactionCreate", async (interaction) => {
             await interaction.showModal(modal);
         }
 
-        // ============================
-        // БЫСТРЫЙ ОТВЕТ
-        // ============================
         if (action === "quick_reply") {
             const modal = new ModalBuilder()
                 .setCustomId(`quick_reply_${ticketId}`)
@@ -397,14 +498,10 @@ discordClient.on("interactionCreate", async (interaction) => {
     }
 });
 
-// ============================
-// MODAL SUBMIT (Discord)
-// ============================
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isModalSubmit()) return;
 
-        // Закрытие тикета
         if (interaction.customId.startsWith("close_reason_")) {
             const ticketId = Number(interaction.customId.replace("close_reason_", ""));
             const reason = interaction.fields.getTextInputValue("close_reason") || "Причина не указана";
@@ -431,7 +528,6 @@ discordClient.on("interactionCreate", async (interaction) => {
                 })
                 .eq("id", ticketId);
 
-            // Обновляем сообщение в Discord
             const channel = await discordClient.channels.fetch(data.discord_channel_id);
             const message = await channel.messages.fetch(data.discord_message_id);
 
@@ -459,23 +555,9 @@ discordClient.on("interactionCreate", async (interaction) => {
             });
         }
 
-        // Быстрый ответ
         if (interaction.customId.startsWith("quick_reply_")) {
             const ticketId = Number(interaction.customId.replace("quick_reply_", ""));
             const reply = interaction.fields.getTextInputValue("reply_text");
-
-            const { data, error } = await supabase
-                .from("tickets")
-                .select("*")
-                .eq("id", ticketId)
-                .single();
-
-            if (error || !data) {
-                return interaction.reply({
-                    content: "❌ Тикет не найден.",
-                    ephemeral: true
-                });
-            }
 
             await interaction.reply({
                 content: `✅ Быстрый ответ отправлен!\n\n📝 **Ответ:**\n${reply}`,
@@ -497,12 +579,20 @@ app.listen(PORT, "0.0.0.0", () => {
 });
 
 // ============================
-// ЗАПУСК БОТА
+// ЗАПУСК БОТА И НАСТРОЙКА КАНАЛОВ
 // ============================
 if (DISCORD_TOKEN) {
     discordClient.login(DISCORD_TOKEN)
-        .then(() => {
+        .then(async () => {
             console.log("🤖 Discord бот запущен!");
+            
+            // Настраиваем каналы
+            CHANNEL_MAP = await setupChannels();
+            
+            console.log("📋 ID каналов:");
+            for (const [key, id] of Object.entries(CHANNEL_MAP)) {
+                console.log(`   ${key}: ${id}`);
+            }
         })
         .catch((error) => {
             console.error("❌ Ошибка запуска бота:", error.message);
