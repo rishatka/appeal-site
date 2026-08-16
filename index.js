@@ -26,6 +26,10 @@ if (!DISCORD_TOKEN) {
     console.warn("⚠️ DISCORD_TOKEN не задан — бот не запустится!");
 }
 
+if (!GUILD_ID) {
+    console.warn("⚠️ GUILD_ID не задан! Бот не сможет создавать каналы.");
+}
+
 // ============================
 // ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ
 // ============================
@@ -50,13 +54,13 @@ app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 // ============================
-// ПЕРЕМЕННЫЕ ДЛЯ ID КАНАЛОВ (ЗАПОЛНЯЮТСЯ ПРИ ЗАПУСКЕ)
+// ID КАНАЛОВ (ЗАПОЛНЯЮТСЯ ПРИ ЗАПУСКЕ)
 // ============================
 let TICKET_CHANNEL_ID = null;
 let APPEAL_CHANNEL_ID = null;
 
 // ============================
-// ФУНКЦИЯ НАСТРОЙКИ КАНАЛОВ (ТОЛЬКО 2 КАНАЛА)
+// НАСТРОЙКА КАНАЛОВ (ТОЛЬКО 2)
 // ============================
 async function setupChannels() {
     if (!GUILD_ID) {
@@ -519,7 +523,7 @@ app.get("/api/tickets/user/:userId", async (req, res) => {
 });
 
 // ============================
-// 3. ОБРАБОТКА КНОПОК В DISCORD
+// 3. ОБРАБОТКА КНОПОК
 // ============================
 
 // ===== АПЕЛЛЯЦИИ =====
@@ -577,7 +581,6 @@ discordClient.on("interactionCreate", async (interaction) => {
     }
 });
 
-// ===== ФУНКЦИЯ РЕШЕНИЯ АПЕЛЛЯЦИИ =====
 async function decideAppeal(interaction, id, status, decisionReason) {
     const { data, error } = await supabase
         .from("appeals")
@@ -836,7 +839,7 @@ app.listen(PORT, "0.0.0.0", () => {
 });
 
 // ============================
-// ЗАПУСК БОТА И НАСТРОЙКА КАНАЛОВ
+// ЗАПУСК БОТА
 // ============================
 if (DISCORD_TOKEN) {
     discordClient.login(DISCORD_TOKEN)
