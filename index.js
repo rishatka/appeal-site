@@ -382,7 +382,7 @@ app.get("/api/appeals/user/:userId", async (req, res) => {
 });
 
 // ============================
-// 2. ТИКЕТЫ
+// 2. ТИКЕТЫ (ИСПРАВЛЕНО — СОХРАНЯЕТ CHANNEL_ID)
 // ============================
 app.post("/api/tickets", async (req, res) => {
     try {
@@ -428,75 +428,92 @@ app.post("/api/tickets", async (req, res) => {
             .update({ ticket_number: ticketNumber })
             .eq("id", data.id);
 
+        // ============================
+        // ОТПРАВКА В КАНАЛ ТИКЕТОВ С СОХРАНЕНИЕМ ID
+        // ============================
         try {
-            if (TICKET_CHANNEL_ID) {
-                const channel = await discordClient.channels.fetch(TICKET_CHANNEL_ID);
-                
-                if (channel) {
-                    const priorityEmoji = { low: '🟢', medium: '🟡', high: '🔴' }[priority] || '🟡';
-                    const catNames = {
-                        'technical': '🖥️ Техническая проблема',
-                        'financial': '💳 Финансовый вопрос',
-                        'gameplay': '🎮 Игровой вопрос',
-                        'moderation': '🛡️ Модерация',
-                        'other': '📌 Другое'
-                    };
-                    const categoryName = catNames[category] || category;
-
-                    const embed = new EmbedBuilder()
-                        .setTitle('🎫 Новый тикет')
-                        .setColor(0x5865F2)
-                        .setDescription(`**${userName}** создал(а) обращение.`)
-                        .addFields(
-                            { name: '📌 Номер', value: `\`${ticketNumber}\``, inline: true },
-                            { name: '👤 Пользователь', value: `<@${userId}>`, inline: true },
-                            { name: '🏷️ Категория', value: categoryName, inline: true },
-                            { name: '📊 Приоритет', value: `${priorityEmoji} ${priority || 'medium'}`, inline: true },
-                            { name: '📝 Тема', value: subject },
-                            { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
-                            { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
-                        )
-                        .setFooter({ text: '🔐 Защищённая система' })
-                        .setTimestamp();
-
-                    const buttons = new ActionRowBuilder()
-                        .addComponents(
-                            new ButtonBuilder()
-                                .setCustomId(`ticket_take_${data.id}`)
-                                .setLabel("Взять в работу")
-                                .setEmoji("🛠️")
-                                .setStyle(ButtonStyle.Primary),
-                            new ButtonBuilder()
-                                .setCustomId(`ticket_close_${data.id}`)
-                                .setLabel("Закрыть тикет")
-                                .setEmoji("🔒")
-                                .setStyle(ButtonStyle.Danger),
-                            new ButtonBuilder()
-                                .setCustomId(`ticket_reply_${data.id}`)
-                                .setLabel("Быстрый ответ")
-                                .setEmoji("⚡")
-                                .setStyle(ButtonStyle.Success)
-                        );
-
-                    const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
-
-                    const sentMessage = await channel.send({
-                        content: content,
-                        embeds: [embed],
-                        components: [buttons]
-                    });
-
-                    await supabase
-                        .from("tickets")
-                        .update({
-                            discord_message_id: sentMessage.id,
-                            discord_channel_id: channel.id
-                        })
-                        .eq("id", data.id);
-                }
+            if (!TICKET_CHANNEL_ID) {
+                console.error("❌ TICKET_CHANNEL_ID не задан!");
+                throw new Error("TICKET_CHANNEL_ID is null");
             }
+
+            const channel = await discordClient.channels.fetch(TICKET_CHANNEL_ID);
+            
+            if (!channel) {
+                console.error("❌ Канал не найден!");
+                throw new Error("Channel not found");
+            }
+
+            const priorityEmoji = { low: '🟢', medium: '🟡', high: '🔴' }[priority] || '🟡';
+            const catNames = {
+                'technical': '🖥️ Техническая проблема',
+                'financial': '💳 Финансовый вопрос',
+                'gameplay': '🎮 Игровой вопрос',
+                'moderation': '🛡️ Модерация',
+                'other': '📌 Другое'
+            };
+            const categoryName = catNames[category] || category;
+
+            const embed = new EmbedBuilder()
+                .setTitle('🎫 Новый тикет')
+                .setColor(0x5865F2)
+                .setDescription(`**${userName}** создал(а) обращение.`)
+                .addFields(
+                    { name: '📌 Номер', value: `\`${ticketNumber}\``, inline: true },
+                    { name: '👤 Пользователь', value: `<@${userId}>`, inline: true },
+                    { name: '🏷️ Категория', value: categoryName, inline: true },
+                    { name: '📊 Приоритет', value: `${priorityEmoji} ${priority || 'medium'}`, inline: true },
+                    { name: '📝 Тема', value: subject },
+                    { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
+                    { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
+                )
+                .setFooter({ text: '🔐 Защищённая система' })
+                .setTimestamp();
+
+            const buttons = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_take_${data.id}`)
+                        .setLabel("Взять в работу")
+                        .setEmoji("🛠️")
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_close_${data.id}`)
+                        .setLabel("Закрыть тикет")
+                        .setEmoji("🔒")
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId(`ticket_reply_${data.id}`)
+                        .setLabel("Быстрый ответ")
+                        .setEmoji("⚡")
+                        .setStyle(ButtonStyle.Success)
+                );
+
+            const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
+
+            const sentMessage = await channel.send({
+                content: content,
+                embeds: [embed],
+                components: [buttons]
+            });
+
+            // ✅ СОХРАНЯЕМ ID КАНАЛА И СООБЩЕНИЯ
+            const { error: updateError } = await supabase
+                .from("tickets")
+                .update({
+                    discord_message_id: sentMessage.id,
+                    discord_channel_id: channel.id
+                })
+                .eq("id", data.id);
+
+            if (updateError) {
+                console.error("❌ Ошибка сохранения ID канала:", updateError);
+            } else {
+                console.log(`✅ Тикет сохранён в БД с channel_id: ${channel.id}`);
+            }
+
         } catch (discordError) {
-            console.error("Ошибка отправки в Discord:", discordError.message);
+            console.error("❌ Ошибка отправки в Discord:", discordError.message);
         }
 
         res.json({
