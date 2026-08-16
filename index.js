@@ -92,13 +92,13 @@ app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 // ============================
-// ID КАНАЛОВ (ЗАПОЛНЯЮТСЯ ПРИ ЗАПУСКЕ)
+// ID КАНАЛОВ
 // ============================
 let TICKET_CHANNEL_ID = null;
 let APPEAL_CHANNEL_ID = null;
 
 // ============================
-// НАСТРОЙКА КАНАЛОВ (ТОЛЬКО 2)
+// НАСТРОЙКА КАНАЛОВ (БЕЗ ДУБЛИРОВАНИЯ)
 // ============================
 async function setupChannels() {
     if (!GUILD_ID) {
@@ -116,12 +116,17 @@ async function setupChannels() {
         console.log(`✅ Найден сервер: ${guild.name}`);
         console.log("🏗️ Настраиваю каналы...");
 
-        // ============================
-        // КАНАЛ ДЛЯ ТИКЕТОВ
-        // ============================
+        // ===== КАНАЛ ДЛЯ ТИКЕТОВ =====
         let ticketChannel = guild.channels.cache.find(
             c => c.name === "тикеты" && c.type === ChannelType.GuildText
         );
+
+        if (!ticketChannel) {
+            const channels = await guild.channels.fetch();
+            ticketChannel = channels.find(
+                c => c.name === "тикеты" && c.type === ChannelType.GuildText
+            );
+        }
 
         if (!ticketChannel) {
             console.log("📢 Создаю канал #тикеты...");
@@ -136,12 +141,17 @@ async function setupChannels() {
 
         TICKET_CHANNEL_ID = ticketChannel.id;
 
-        // ============================
-        // КАНАЛ ДЛЯ АПЕЛЛЯЦИЙ
-        // ============================
+        // ===== КАНАЛ ДЛЯ АПЕЛЛЯЦИЙ =====
         let appealChannel = guild.channels.cache.find(
             c => c.name === "апелляции" && c.type === ChannelType.GuildText
         );
+
+        if (!appealChannel) {
+            const channels = await guild.channels.fetch();
+            appealChannel = channels.find(
+                c => c.name === "апелляции" && c.type === ChannelType.GuildText
+            );
+        }
 
         if (!appealChannel) {
             console.log("📢 Создаю канал #апелляции...");
@@ -194,7 +204,6 @@ app.post("/api/appeals", async (req, res) => {
             });
         }
 
-        // Шифруем чувствительные данные
         const encryptedNickname = encrypt(nickname);
         const encryptedPunishment = encrypt(punishment);
         const encryptedReason = encrypt(reason);
@@ -226,9 +235,6 @@ app.post("/api/appeals", async (req, res) => {
             .update({ appeal_number: appealNumber })
             .eq("id", data.id);
 
-        // ============================
-        // ОТПРАВКА В КАНАЛ АПЕЛЛЯЦИЙ
-        // ============================
         try {
             if (APPEAL_CHANNEL_ID) {
                 const channel = await discordClient.channels.fetch(APPEAL_CHANNEL_ID);
@@ -317,7 +323,6 @@ app.get("/api/appeals/:number", async (req, res) => {
             });
         }
 
-        // Расшифровываем
         if (data.discord_username) data.discord_username = decrypt(data.discord_username);
         if (data.punishment) data.punishment = decrypt(data.punishment);
         if (data.reason) data.reason = decrypt(data.reason);
@@ -356,7 +361,6 @@ app.get("/api/appeals/user/:userId", async (req, res) => {
             });
         }
 
-        // Расшифровываем
         data.forEach(appeal => {
             if (appeal.discord_username) appeal.discord_username = decrypt(appeal.discord_username);
             if (appeal.punishment) appeal.punishment = decrypt(appeal.punishment);
@@ -391,7 +395,6 @@ app.post("/api/tickets", async (req, res) => {
             });
         }
 
-        // Шифруем чувствительные данные
         const encryptedUserName = encrypt(userName);
         const encryptedSubject = encrypt(subject);
         const encryptedMessage = encrypt(message);
@@ -425,9 +428,6 @@ app.post("/api/tickets", async (req, res) => {
             .update({ ticket_number: ticketNumber })
             .eq("id", data.id);
 
-        // ============================
-        // ОТПРАВКА В КАНАЛ ТИКЕТОВ
-        // ============================
         try {
             if (TICKET_CHANNEL_ID) {
                 const channel = await discordClient.channels.fetch(TICKET_CHANNEL_ID);
@@ -534,12 +534,10 @@ app.get("/api/tickets/:number", async (req, res) => {
             });
         }
 
-        // Расшифровываем
         if (data.user_name) data.user_name = decrypt(data.user_name);
         if (data.subject) data.subject = decrypt(data.subject);
         if (data.message) data.message = decrypt(data.message);
 
-        // Получаем ответы
         const repliesResponse = await supabase
             .from("ticket_replies")
             .select("*")
@@ -550,6 +548,7 @@ app.get("/api/tickets/:number", async (req, res) => {
         if (repliesResponse.data) {
             replies = repliesResponse.data.map(reply => {
                 if (reply.content) reply.content = decrypt(reply.content);
+                if (reply.author_name) reply.author_name = decrypt(reply.author_name);
                 return reply;
             });
         }
@@ -589,7 +588,6 @@ app.get("/api/tickets/user/:userId", async (req, res) => {
             });
         }
 
-        // Расшифровываем
         data.forEach(ticket => {
             if (ticket.user_name) ticket.user_name = decrypt(ticket.user_name);
             if (ticket.subject) ticket.subject = decrypt(ticket.subject);
@@ -625,7 +623,6 @@ app.post("/api/tickets/:ticketId/replies", async (req, res) => {
             });
         }
 
-        // Шифруем ответ
         const encryptedContent = encrypt(content);
         const encryptedAuthorName = encrypt(authorName || 'Система');
 
@@ -649,7 +646,6 @@ app.post("/api/tickets/:ticketId/replies", async (req, res) => {
             });
         }
 
-        // Расшифровываем для ответа
         if (data.content) data.content = decrypt(data.content);
         if (data.author_name) data.author_name = decrypt(data.author_name);
 
@@ -964,7 +960,6 @@ discordClient.on("interactionCreate", async (interaction) => {
             const ticketId = Number(interaction.customId.replace("ticket_reply_modal_", ""));
             const reply = interaction.fields.getTextInputValue("reply_text");
 
-            // ===== СОХРАНЯЕМ ОТВЕТ В БД =====
             try {
                 const { data: ticketData, error: ticketError } = await supabase
                     .from("tickets")
@@ -979,7 +974,6 @@ discordClient.on("interactionCreate", async (interaction) => {
                     });
                 }
 
-                // Шифруем и сохраняем ответ
                 const encryptedReply = encrypt(reply);
                 const encryptedAuthorName = encrypt(interaction.user.username);
 
@@ -993,7 +987,6 @@ discordClient.on("interactionCreate", async (interaction) => {
                         is_moderator: true
                     });
 
-                // Отправляем ответ в канал
                 const channel = await discordClient.channels.fetch(ticketData.discord_channel_id);
                 const msg = await channel.messages.fetch(ticketData.discord_message_id);
 
