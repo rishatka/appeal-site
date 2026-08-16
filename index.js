@@ -98,7 +98,7 @@ let TICKET_CHANNEL_ID = null;
 let APPEAL_CHANNEL_ID = null;
 
 // ============================
-// НАСТРОЙКА КАНАЛОВ (БЕЗ ДУБЛИРОВАНИЯ)
+// НАСТРОЙКА КАНАЛОВ
 // ============================
 async function setupChannels() {
     if (!GUILD_ID) {
