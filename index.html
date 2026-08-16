@@ -6,12 +6,7 @@
     <title>✨ Nexus — Апелляции и Поддержка</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background: #05080f;
@@ -22,7 +17,6 @@
             align-items: center;
             background-image: radial-gradient(ellipse at 20% 30%, #0d1a2b, #05080f 70%);
         }
-
         .glow {
             position: fixed;
             width: 600px;
@@ -33,28 +27,9 @@
             z-index: 0;
             pointer-events: none;
         }
-
-        .container {
-            width: 100%;
-            max-width: 720px;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header {
-            text-align: center;
-            padding: 30px 0 20px;
-            position: relative;
-        }
-
-        .header-top {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-
+        .container { width: 100%; max-width: 720px; padding: 20px; position: relative; z-index: 1; }
+        .header { text-align: center; padding: 30px 0 20px; position: relative; }
+        .header-top { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 15px; }
         .status-badge {
             display: flex;
             align-items: center;
@@ -69,19 +44,9 @@
             backdrop-filter: blur(8px);
             white-space: nowrap;
         }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            background: #4a5568;
-            transition: all 0.3s ease;
-        }
-
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #4a5568; transition: all 0.3s ease; }
         .status-dot.online { background: #57f287; box-shadow: 0 0 12px rgba(87, 242, 135, 0.4); }
         .status-dot.offline { background: #ed4245; box-shadow: 0 0 12px rgba(237, 66, 69, 0.4); }
-
         .header .badge {
             display: inline-block;
             background: rgba(88, 101, 242, 0.15);
@@ -96,7 +61,6 @@
             margin-bottom: 18px;
             text-transform: uppercase;
         }
-
         .header h1 {
             font-size: 44px;
             font-weight: 700;
@@ -105,15 +69,7 @@
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
-
-        .header p {
-            color: #8892a8;
-            font-size: 17px;
-            margin-top: 10px;
-            font-weight: 400;
-        }
-
-        /* ===== ВКЛАДКИ ===== */
+        .header p { color: #8892a8; font-size: 17px; margin-top: 10px; font-weight: 400; }
         .tabs {
             display: flex;
             gap: 8px;
@@ -123,7 +79,6 @@
             padding: 6px;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-
         .tab-btn {
             flex: 1;
             padding: 14px 20px;
@@ -137,27 +92,10 @@
             transition: all 0.3s ease;
             font-family: 'Inter', sans-serif;
         }
-
-        .tab-btn:hover {
-            color: #f0f4ff;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .tab-btn.active {
-            background: rgba(88, 101, 242, 0.15);
-            color: #8b9aff;
-            box-shadow: 0 0 20px rgba(88, 101, 242, 0.05);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* ===== КАРТОЧКИ ===== */
+        .tab-btn:hover { color: #f0f4ff; background: rgba(255, 255, 255, 0.04); }
+        .tab-btn.active { background: rgba(88, 101, 242, 0.15); color: #8b9aff; box-shadow: 0 0 20px rgba(88, 101, 242, 0.05); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         .card {
             background: rgba(16, 24, 36, 0.75);
             backdrop-filter: blur(20px);
@@ -168,37 +106,11 @@
             transition: all 0.3s ease;
             margin-bottom: 30px;
         }
-
-        .card:hover {
-            border-color: rgba(88, 101, 242, 0.2);
-            box-shadow: 0 40px 80px -20px rgba(88, 101, 242, 0.15);
-        }
-
-        .card h2 {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
-        }
-
-        .card .description {
-            color: #8892a8;
-            font-size: 15px;
-            margin-bottom: 28px;
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            color: #b0bbd4;
-            margin-bottom: 6px;
-        }
-
-        input,
-        textarea,
-        select {
+        .card:hover { border-color: rgba(88, 101, 242, 0.2); box-shadow: 0 40px 80px -20px rgba(88, 101, 242, 0.15); }
+        .card h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.3px; }
+        .card .description { color: #8892a8; font-size: 15px; margin-bottom: 28px; }
+        label { display: block; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; color: #b0bbd4; margin-bottom: 6px; }
+        input, textarea, select {
             width: 100%;
             background: rgba(10, 16, 26, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -211,24 +123,13 @@
             font-family: 'Inter', sans-serif;
             transition: 0.25s ease;
         }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
+        input:focus, textarea:focus, select:focus {
             border-color: #5865f2;
             background: rgba(10, 16, 26, 0.8);
             box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.1);
         }
-
-        select option {
-            background: #111720;
-        }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
+        select option { background: #111720; }
+        textarea { min-height: 120px; resize: vertical; }
         .btn-primary {
             width: 100%;
             border: none;
@@ -242,18 +143,8 @@
             transition: 0.25s ease;
             box-shadow: 0 4px 14px rgba(88, 101, 242, 0.3);
         }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            transform: none;
-            cursor: not-allowed;
-        }
-
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4); }
+        .btn-primary:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
         .btn-secondary {
             border: none;
             border-radius: 16px;
@@ -267,12 +158,7 @@
             border: 1px solid rgba(255, 255, 255, 0.04);
             white-space: nowrap;
         }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.08);
-        }
-
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.08); }
         .status {
             margin-top: 24px;
             padding: 16px 20px;
@@ -281,35 +167,11 @@
             display: none;
             border: 1px solid transparent;
         }
-
-        .status.success {
-            display: block;
-            border-color: rgba(87, 242, 135, 0.25);
-            background: rgba(87, 242, 135, 0.04);
-        }
-
-        .status.error {
-            display: block;
-            border-color: rgba(237, 66, 69, 0.25);
-            background: rgba(237, 66, 69, 0.04);
-        }
-
-        .status-title {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .check-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .check-row input {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
+        .status.success { display: block; border-color: rgba(87, 242, 135, 0.25); background: rgba(87, 242, 135, 0.04); }
+        .status.error { display: block; border-color: rgba(237, 66, 69, 0.25); background: rgba(237, 66, 69, 0.04); }
+        .status-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .check-row { display: flex; gap: 12px; }
+        .check-row input { flex: 1; margin-bottom: 0; }
         .status-result {
             margin-top: 20px;
             padding: 18px 22px;
@@ -318,87 +180,32 @@
             display: none;
             border: 1px solid rgba(255, 255, 255, 0.04);
         }
-
-        .status-result.visible {
-            display: block;
-        }
-
-        .ticket-item {
+        .status-result.visible { display: block; }
+        .reply-item {
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 12px;
+            border-left: 3px solid #5865f2;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 8px;
         }
-
-        .ticket-item .ticket-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .ticket-item .ticket-subject {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .ticket-item .ticket-status {
-            font-size: 13px;
-            padding: 4px 12px;
-            border-radius: 100px;
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .ticket-item .ticket-status.open { color: #57f287; }
-        .ticket-item .ticket-status.in_progress { color: #f0b400; }
-        .ticket-item .ticket-status.closed { color: #ed4245; }
-
-        .ticket-item .ticket-meta {
-            color: #8892a8;
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .footer {
-            text-align: center;
-            color: #3d4659;
-            padding: 30px 0;
-            font-size: 14px;
-        }
-
-        .footer span {
-            color: #5865f2;
-        }
-
+        .reply-item.moderator { border-left-color: #5865f2; }
+        .reply-item.user { border-left-color: #57f287; }
+        .reply-item .reply-meta { color: #8892a8; font-size: 12px; margin-bottom: 4px; }
+        .reply-item .reply-content { color: #f0f4ff; }
+        .footer { text-align: center; color: #3d4659; padding: 30px 0; font-size: 14px; }
+        .footer span { color: #5865f2; }
         @media (max-width: 600px) {
-            .header h1 {
-                font-size: 30px;
-            }
-            .card {
-                padding: 28px 20px;
-            }
-            .check-row {
-                flex-direction: column;
-            }
-            .btn-secondary {
-                width: 100%;
-                text-align: center;
-            }
-            .header-top {
-                justify-content: center;
-            }
+            .header h1 { font-size: 30px; }
+            .card { padding: 28px 20px; }
+            .check-row { flex-direction: column; }
+            .btn-secondary { width: 100%; text-align: center; }
+            .header-top { justify-content: center; }
         }
     </style>
 </head>
 <body>
-
     <div class="glow"></div>
-
     <div class="container">
-
         <header class="header">
             <div class="header-top">
                 <div class="status-badge">
@@ -410,69 +217,48 @@
             <h1>Апелляции и поддержка</h1>
             <p>Выберите нужный раздел</p>
         </header>
-
-        <!-- ===== ВКЛАДКИ ===== -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="appeals">📝 Апелляции</button>
             <button class="tab-btn" data-tab="tickets">🎫 Поддержка</button>
         </div>
-
-        <!-- ========================================== -->
-        <!-- ВКЛАДКА 1: АПЕЛЛЯЦИИ                      -->
-        <!-- ========================================== -->
         <div id="tab-appeals" class="tab-content active">
             <div class="card">
                 <h2>📝 Подать апелляцию</h2>
                 <p class="description">Обжалуйте наказание, если считаете его несправедливым.</p>
-
                 <form id="appealForm">
                     <label for="appealDiscord">Discord ID</label>
                     <input type="text" id="appealDiscord" placeholder="123456789012345678" required />
-
                     <label for="appealNickname">Discord ник</label>
                     <input type="text" id="appealNickname" placeholder="Rishat" required />
-
                     <label for="appealPunishment">Вид наказания</label>
                     <input type="text" id="appealPunishment" placeholder="Бан / Мут / Предупреждение" required />
-
                     <label for="appealReason">Причина апелляции</label>
                     <textarea id="appealReason" placeholder="Опишите ситуацию подробно..." required></textarea>
-
                     <button type="submit" class="btn-primary" id="appealSubmitBtn">📨 Отправить апелляцию</button>
                 </form>
-
                 <div id="appealStatus" class="status">
                     <div class="status-title" id="appealStatusTitle"></div>
                     <div id="appealStatusText"></div>
                 </div>
             </div>
         </div>
-
-        <!-- ========================================== -->
-        <!-- ВКЛАДКА 2: ПОДДЕРЖКА (ТИКЕТЫ)            -->
-        <!-- ========================================== -->
         <div id="tab-tickets" class="tab-content">
             <div class="card">
                 <h2>🎫 Создать обращение</h2>
                 <p class="description">Заполните форму, и наш саппорт свяжется с вами.</p>
-
                 <form id="ticketForm">
                     <label for="ticketUserId">Discord ID</label>
                     <input type="text" id="ticketUserId" placeholder="123456789012345678" required />
-
                     <label for="ticketUserName">Discord ник</label>
                     <input type="text" id="ticketUserName" placeholder="Rishat" required />
-
                     <label for="ticketSubject">Тема обращения</label>
                     <input type="text" id="ticketSubject" placeholder="Кратко опишите проблему" required />
-
                     <label for="ticketPriority">Приоритет</label>
                     <select id="ticketPriority">
                         <option value="low">🟢 Низкий</option>
                         <option value="medium" selected>🟡 Средний</option>
                         <option value="high">🔴 Высокий</option>
                     </select>
-
                     <label for="ticketCategory">Категория обращения</label>
                     <select id="ticketCategory" required>
                         <option value="technical">🖥️ Техническая проблема</option>
@@ -481,44 +267,33 @@
                         <option value="moderation">🛡️ Модерация</option>
                         <option value="other">📌 Другое</option>
                     </select>
-
                     <label for="ticketMessage">Сообщение</label>
                     <textarea id="ticketMessage" placeholder="Опишите вашу проблему подробно..." required></textarea>
-
                     <button type="submit" class="btn-primary" id="ticketSubmitBtn">📨 Отправить обращение</button>
                 </form>
-
                 <div id="ticketStatus" class="status">
                     <div class="status-title" id="ticketStatusTitle"></div>
                     <div id="ticketStatusText"></div>
                 </div>
             </div>
         </div>
-
-        <!-- ===== ПРОВЕРКА СТАТУСА (ОБЩАЯ) ===== -->
         <div class="card">
             <h2>🔍 Проверить статус</h2>
             <p class="description">Введите номер (AP-XXXXXX или TK-XXXXXXX) или Discord ID.</p>
-
             <div class="check-row">
                 <input type="text" id="checkNumber" placeholder="AP-000001 или TK-000001 или ID" />
                 <button class="btn-secondary" onclick="checkStatus()">Проверить</button>
             </div>
-
             <div id="statusResult" class="status-result">
                 <div id="statusResultContent"></div>
             </div>
         </div>
-
         <footer class="footer">
             <span>✦</span> Nexus Support • Круглосуточная поддержка <span>✦</span>
         </footer>
     </div>
-
     <script>
         const API_URL = 'https://appeal-site-production.up.railway.app';
-
-        // ===== СТАТУС СЕРВЕРА =====
         async function checkServerStatus() {
             const dot = document.getElementById('statusDot');
             const text = document.getElementById('statusText');
@@ -538,8 +313,6 @@
         }
         checkServerStatus();
         setInterval(checkServerStatus, 30000);
-
-        // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -548,41 +321,30 @@
                 document.getElementById('tab-' + this.dataset.tab).classList.add('active');
             });
         });
-
-        // ==========================================
-        // 1. ОТПРАВКА АПЕЛЛЯЦИИ
-        // ==========================================
         const appealForm = document.getElementById('appealForm');
         const appealStatus = document.getElementById('appealStatus');
         const appealStatusTitle = document.getElementById('appealStatusTitle');
         const appealStatusText = document.getElementById('appealStatusText');
         const appealSubmitBtn = document.getElementById('appealSubmitBtn');
-
         appealForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const discord = document.getElementById('appealDiscord').value.trim();
             const nickname = document.getElementById('appealNickname').value.trim();
             const punishment = document.getElementById('appealPunishment').value.trim();
             const reason = document.getElementById('appealReason').value.trim();
-
             if (!discord || !nickname || !punishment || !reason) {
                 showAppealStatus('error', 'Ошибка', 'Заполните все поля.');
                 return;
             }
-
             appealSubmitBtn.disabled = true;
             appealSubmitBtn.textContent = '⏳ Отправка...';
-
             try {
                 const response = await fetch(`${API_URL}/api/appeals`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ discord, nickname, punishment, reason })
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
                     showAppealStatus('success', '✅ Апелляция отправлена!',
                         `Ваш номер: <strong style="font-size:24px;color:#5865f2;">${result.appealNumber}</strong><br>Сохраните его для проверки статуса.`
@@ -599,49 +361,37 @@
                 appealSubmitBtn.textContent = '📨 Отправить апелляцию';
             }
         });
-
         function showAppealStatus(type, title, text) {
             appealStatus.className = `status ${type}`;
             appealStatusTitle.textContent = title;
             appealStatusText.innerHTML = text;
         }
-
-        // ==========================================
-        // 2. ОТПРАВКА ТИКЕТА
-        // ==========================================
         const ticketForm = document.getElementById('ticketForm');
         const ticketStatus = document.getElementById('ticketStatus');
         const ticketStatusTitle = document.getElementById('ticketStatusTitle');
         const ticketStatusText = document.getElementById('ticketStatusText');
         const ticketSubmitBtn = document.getElementById('ticketSubmitBtn');
-
         ticketForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const userId = document.getElementById('ticketUserId').value.trim();
             const userName = document.getElementById('ticketUserName').value.trim();
             const subject = document.getElementById('ticketSubject').value.trim();
             const message = document.getElementById('ticketMessage').value.trim();
             const priority = document.getElementById('ticketPriority').value;
             const category = document.getElementById('ticketCategory').value;
-
             if (!userId || !userName || !subject || !message) {
                 showTicketStatus('error', 'Ошибка', 'Заполните все поля.');
                 return;
             }
-
             ticketSubmitBtn.disabled = true;
             ticketSubmitBtn.textContent = '⏳ Отправка...';
-
             try {
                 const response = await fetch(`${API_URL}/api/tickets`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId, userName, subject, message, priority, category })
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
                     showTicketStatus('success', '✅ Обращение создано!',
                         `Номер: <strong style="font-size:24px;color:#5865f2;">${result.ticketNumber}</strong><br>Сохраните его для проверки статуса.`
@@ -658,78 +408,121 @@
                 ticketSubmitBtn.textContent = '📨 Отправить обращение';
             }
         });
-
         function showTicketStatus(type, title, text) {
             ticketStatus.className = `status ${type}`;
             ticketStatusTitle.textContent = title;
             ticketStatusText.innerHTML = text;
         }
-
-        // ==========================================
-        // 3. ПРОВЕРКА СТАТУСА (ОБЩАЯ)
-        // ==========================================
         async function checkStatus() {
             const input = document.getElementById('checkNumber').value.trim();
             const resultDiv = document.getElementById('statusResult');
             const contentDiv = document.getElementById('statusResultContent');
-
             if (!input) {
                 resultDiv.style.display = 'block';
                 resultDiv.style.border = '1px solid #ed4245';
                 contentDiv.innerHTML = '❌ Введите номер или Discord ID';
                 return;
             }
-
             try {
-                let url;
-                let isUserId = /^\d+$/.test(input) && input.length > 10;
-
-                if (isUserId) {
-                    // Проверяем сначала тикеты, потом апелляции
-                    let response = await fetch(`${API_URL}/api/tickets/user/${input}`);
-                    let result = await response.json();
-
-                    if (result.success && result.tickets && result.tickets.length > 0) {
-                        renderTickets(result.tickets);
-                        return;
-                    }
-
-                    response = await fetch(`${API_URL}/api/appeals/user/${input}`);
-                    result = await response.json();
-
-                    if (result.success && result.appeals && result.appeals.length > 0) {
-                        renderAppeals(result.appeals);
-                        return;
-                    }
-
-                    resultDiv.style.display = 'block';
-                    resultDiv.style.border = '1px solid #ed4245';
-                    contentDiv.innerHTML = '❌ Обращений не найдено.';
-                    return;
-                }
-
-                // Пробуем как номер апелляции
-                let response = await fetch(`${API_URL}/api/appeals/${input}`);
+                let response = await fetch(`${API_URL}/api/tickets/${input}`);
                 let result = await response.json();
-
-                if (result.success) {
-                    renderSingleAppeal(result.appeal);
+                if (result.success && result.ticket) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
+                    const ticket = result.ticket;
+                    const replies = result.replies || [];
+                    const statusMap = { 'open': '🟢 Открыт', 'in_progress': '🟡 В работе', 'closed': '🔴 Закрыт' };
+                    const catNames = {
+                        'technical': '🖥️ Техническая проблема',
+                        'financial': '💳 Финансовый вопрос',
+                        'gameplay': '🎮 Игровой вопрос',
+                        'moderation': '🛡️ Модерация',
+                        'other': '📌 Другое'
+                    };
+                    let html = `
+                        <div style="font-weight:600;margin-bottom:8px;">📌 ${ticket.subject}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Номер: ${ticket.ticket_number}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Статус: ${statusMap[ticket.status] || ticket.status}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Категория: ${catNames[ticket.category] || ticket.category}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Приоритет: ${ticket.priority || 'средний'}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Сообщение: ${ticket.message || '—'}</div>
+                        ${ticket.assigned_name ? `<div style="color:#8892a8;">🛠️ Модератор: ${ticket.assigned_name}</div>` : ''}
+                        ${ticket.closed_at ? `<div style="color:#8892a8;">🔒 Закрыт: ${new Date(ticket.closed_at).toLocaleDateString('ru-RU')}</div>` : ''}
+                    `;
+                    if (replies.length > 0) {
+                        html += `<div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;"><div style="font-weight:600;margin-bottom:10px;">💬 Ответы:</div>`;
+                        replies.forEach(r => {
+                            const isMod = r.is_moderator;
+                            const label = isMod ? '🛠️ Модератор' : '👤 Пользователь';
+                            html += `
+                                <div class="reply-item ${isMod ? 'moderator' : 'user'}">
+                                    <div class="reply-meta">${label} ${r.author_name || 'Система'} • ${new Date(r.created_at).toLocaleString('ru-RU')}</div>
+                                    <div class="reply-content">${r.content}</div>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    }
+                    contentDiv.innerHTML = html;
                     return;
                 }
-
-                // Пробуем как номер тикета
-                response = await fetch(`${API_URL}/api/tickets/${input}`);
+                // Проверяем апелляции
+                response = await fetch(`${API_URL}/api/appeals/${input}`);
                 result = await response.json();
-
-                if (result.success) {
-                    renderSingleTicket(result.ticket);
+                if (result.success && result.appeal) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
+                    const a = result.appeal;
+                    const statusMap = { 'pending': '🟡 На рассмотрении', 'approved': '🟢 Одобрена', 'rejected': '🔴 Отклонена' };
+                    contentDiv.innerHTML = `
+                        <div style="font-weight:600;margin-bottom:8px;">📌 Апелляция</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Номер: ${a.appeal_number}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Статус: ${statusMap[a.status] || a.status}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Наказание: ${a.punishment || '—'}</div>
+                        <div style="color:#8892a8;margin-bottom:4px;">Причина: ${a.reason || '—'}</div>
+                        ${a.decision_reason ? `<div style="color:#8892a8;margin-bottom:4px;">📌 Решение: ${a.decision_reason}</div>` : ''}
+                        ${a.moderator_username ? `<div style="color:#8892a8;">👤 Модератор: ${a.moderator_username}</div>` : ''}
+                    `;
                     return;
                 }
-
+                // Проверяем по ID пользователя
+                let isUserId = /^\d+$/.test(input) && input.length > 10;
+                if (isUserId) {
+                    response = await fetch(`${API_URL}/api/tickets/user/${input}`);
+                    result = await response.json();
+                    if (result.success && result.tickets && result.tickets.length > 0) {
+                        resultDiv.style.display = 'block';
+                        resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
+                        const statusMap = { 'open': '🟢 Открыт', 'in_progress': '🟡 В работе', 'closed': '🔴 Закрыт' };
+                        const catNames = {
+                            'technical': '🖥️ Техническая',
+                            'financial': '💳 Финансы',
+                            'gameplay': '🎮 Игровой',
+                            'moderation': '🛡️ Модерация',
+                            'other': '📌 Другое'
+                        };
+                        let html = '<div style="margin-bottom:12px;font-weight:600;">📋 Ваши обращения:</div>';
+                        result.tickets.forEach(t => {
+                            html += `
+                                <div class="ticket-item" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:12px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+                                        <span style="font-weight:600;font-size:16px;">${t.subject}</span>
+                                        <span style="font-size:13px;padding:4px 12px;border-radius:100px;background:rgba(255,255,255,0.06);color:${t.status === 'open' ? '#57f287' : t.status === 'in_progress' ? '#f0b400' : '#ed4245'};">${statusMap[t.status] || t.status}</span>
+                                    </div>
+                                    <div style="color:#8892a8;font-size:13px;margin-top:4px;">
+                                        ${t.ticket_number} • ${catNames[t.category] || t.category} • ${new Date(t.created_at).toLocaleDateString('ru-RU')}
+                                        ${t.assigned_name ? `• 🛠️ ${t.assigned_name}` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        contentDiv.innerHTML = html;
+                        return;
+                    }
+                }
                 resultDiv.style.display = 'block';
                 resultDiv.style.border = '1px solid #ed4245';
                 contentDiv.innerHTML = '❌ Ничего не найдено. Проверьте номер или ID.';
-
             } catch (error) {
                 console.error('Ошибка проверки:', error);
                 resultDiv.style.display = 'block';
@@ -737,112 +530,6 @@
                 contentDiv.innerHTML = '❌ Ошибка соединения с сервером.';
             }
         }
-
-        function renderTickets(tickets) {
-            const resultDiv = document.getElementById('statusResult');
-            const contentDiv = document.getElementById('statusResultContent');
-            resultDiv.style.display = 'block';
-            resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
-
-            const statusMap = { 'open': '🟢 Открыт', 'in_progress': '🟡 В работе', 'closed': '🔴 Закрыт' };
-            const catNames = {
-                'technical': '🖥️ Техническая',
-                'financial': '💳 Финансы',
-                'gameplay': '🎮 Игровой',
-                'moderation': '🛡️ Модерация',
-                'other': '📌 Другое'
-            };
-
-            let html = '<div style="margin-bottom:12px;font-weight:600;">📋 Ваши обращения (тикеты):</div>';
-            tickets.forEach(t => {
-                html += `
-                    <div class="ticket-item">
-                        <div class="ticket-header">
-                            <span class="ticket-subject">${t.subject}</span>
-                            <span class="ticket-status ${t.status}">${statusMap[t.status] || t.status}</span>
-                        </div>
-                        <div class="ticket-meta">
-                            ${t.ticket_number} • ${catNames[t.category] || t.category} • ${new Date(t.created_at).toLocaleDateString('ru-RU')}
-                            ${t.assigned_name ? `• 🛠️ ${t.assigned_name}` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            contentDiv.innerHTML = html;
-        }
-
-        function renderAppeals(appeals) {
-            const resultDiv = document.getElementById('statusResult');
-            const contentDiv = document.getElementById('statusResultContent');
-            resultDiv.style.display = 'block';
-            resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
-
-            const statusMap = { 'pending': '🟡 На рассмотрении', 'approved': '🟢 Одобрена', 'rejected': '🔴 Отклонена' };
-
-            let html = '<div style="margin-bottom:12px;font-weight:600;">📋 Ваши апелляции:</div>';
-            appeals.forEach(a => {
-                html += `
-                    <div class="ticket-item">
-                        <div class="ticket-header">
-                            <span class="ticket-subject">${a.punishment || 'Наказание'}</span>
-                            <span class="ticket-status ${a.status}">${statusMap[a.status] || a.status}</span>
-                        </div>
-                        <div class="ticket-meta">
-                            ${a.appeal_number} • ${new Date(a.created_at).toLocaleDateString('ru-RU')}
-                            ${a.moderator_username ? `• 👤 ${a.moderator_username}` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            contentDiv.innerHTML = html;
-        }
-
-        function renderSingleAppeal(appeal) {
-            const resultDiv = document.getElementById('statusResult');
-            const contentDiv = document.getElementById('statusResultContent');
-            resultDiv.style.display = 'block';
-            resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
-
-            const statusMap = { 'pending': '🟡 На рассмотрении', 'approved': '🟢 Одобрена', 'rejected': '🔴 Отклонена' };
-
-            contentDiv.innerHTML = `
-                <div style="font-weight:600;margin-bottom:8px;">📌 Апелляция</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Номер: ${appeal.appeal_number}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Статус: ${statusMap[appeal.status] || appeal.status}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Наказание: ${appeal.punishment || '—'}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Причина: ${appeal.reason || '—'}</div>
-                ${appeal.decision_reason ? `<div style="color:#8892a8;margin-bottom:4px;">📌 Решение: ${appeal.decision_reason}</div>` : ''}
-                ${appeal.moderator_username ? `<div style="color:#8892a8;">👤 Модератор: ${appeal.moderator_username}</div>` : ''}
-            `;
-        }
-
-        function renderSingleTicket(ticket) {
-            const resultDiv = document.getElementById('statusResult');
-            const contentDiv = document.getElementById('statusResultContent');
-            resultDiv.style.display = 'block';
-            resultDiv.style.border = '1px solid rgba(87, 242, 135, 0.25)';
-
-            const statusMap = { 'open': '🟢 Открыт', 'in_progress': '🟡 В работе', 'closed': '🔴 Закрыт' };
-            const catNames = {
-                'technical': '🖥️ Техническая проблема',
-                'financial': '💳 Финансовый вопрос',
-                'gameplay': '🎮 Игровой вопрос',
-                'moderation': '🛡️ Модерация',
-                'other': '📌 Другое'
-            };
-
-            contentDiv.innerHTML = `
-                <div style="font-weight:600;margin-bottom:8px;">📌 ${ticket.subject}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Номер: ${ticket.ticket_number}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Статус: ${statusMap[ticket.status] || ticket.status}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Категория: ${catNames[ticket.category] || ticket.category}</div>
-                <div style="color:#8892a8;margin-bottom:4px;">Приоритет: ${ticket.priority || 'средний'}</div>
-                <div style="color:#8892a8;margin-bottom:8px;">Сообщение: ${ticket.message || '—'}</div>
-                ${ticket.assigned_name ? `<div style="color:#8892a8;">🛠️ Модератор: ${ticket.assigned_name}</div>` : ''}
-                ${ticket.closed_at ? `<div style="color:#8892a8;">🔒 Закрыт: ${new Date(ticket.closed_at).toLocaleDateString('ru-RU')}</div>` : ''}
-            `;
-        }
     </script>
-
 </body>
 </html>
