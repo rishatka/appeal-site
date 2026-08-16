@@ -382,7 +382,7 @@ app.get("/api/appeals/user/:userId", async (req, res) => {
 });
 
 // ============================
-// 2. ТИКЕТЫ (ИСПРАВЛЕНО — СОХРАНЯЕТ CHANNEL_ID)
+// 2. ТИКЕТЫ
 // ============================
 app.post("/api/tickets", async (req, res) => {
     try {
@@ -428,9 +428,6 @@ app.post("/api/tickets", async (req, res) => {
             .update({ ticket_number: ticketNumber })
             .eq("id", data.id);
 
-        // ============================
-        // ОТПРАВКА В КАНАЛ ТИКЕТОВ С СОХРАНЕНИЕМ ID
-        // ============================
         try {
             if (!TICKET_CHANNEL_ID) {
                 console.error("❌ TICKET_CHANNEL_ID не задан!");
@@ -497,7 +494,6 @@ app.post("/api/tickets", async (req, res) => {
                 components: [buttons]
             });
 
-            // ✅ СОХРАНЯЕМ ID КАНАЛА И СООБЩЕНИЯ
             const { error: updateError } = await supabase
                 .from("tickets")
                 .update({
@@ -532,7 +528,7 @@ app.post("/api/tickets", async (req, res) => {
 });
 
 // ============================
-// ПОЛУЧЕНИЕ ТИКЕТА
+// ПОЛУЧЕНИЕ ТИКЕТА С РАСШИФРОВКОЙ ОТВЕТОВ
 // ============================
 app.get("/api/tickets/:number", async (req, res) => {
     try {
@@ -551,10 +547,12 @@ app.get("/api/tickets/:number", async (req, res) => {
             });
         }
 
+        // Расшифровываем данные тикета
         if (data.user_name) data.user_name = decrypt(data.user_name);
         if (data.subject) data.subject = decrypt(data.subject);
         if (data.message) data.message = decrypt(data.message);
 
+        // ===== ПОЛУЧАЕМ И РАСШИФРОВЫВАЕМ ОТВЕТЫ =====
         const repliesResponse = await supabase
             .from("ticket_replies")
             .select("*")
@@ -564,9 +562,12 @@ app.get("/api/tickets/:number", async (req, res) => {
         let replies = [];
         if (repliesResponse.data) {
             replies = repliesResponse.data.map(reply => {
-                if (reply.content) reply.content = decrypt(reply.content);
-                if (reply.author_name) reply.author_name = decrypt(reply.author_name);
-                return reply;
+                // ✅ РАСШИФРОВЫВАЕМ КАЖДЫЙ ОТВЕТ
+                return {
+                    ...reply,
+                    author_name: decrypt(reply.author_name),
+                    content: decrypt(reply.content)
+                };
             });
         }
 
