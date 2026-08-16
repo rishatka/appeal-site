@@ -15,37 +15,6 @@ const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || "1538206195238572142";
 const GUILD_ID = process.env.GUILD_ID;
 
 // ============================
-// КАТЕГОРИИ ДЛЯ ТИКЕТОВ
-// ============================
-const CATEGORIES = {
-    'technical': {
-        name: 'Техническая поддержка',
-        emoji: '🖥️',
-        channelName: 'тех-поддержка'
-    },
-    'financial': {
-        name: 'Финансовые вопросы',
-        emoji: '💳',
-        channelName: 'финансы'
-    },
-    'gameplay': {
-        name: 'Игровые вопросы',
-        emoji: '🎮',
-        channelName: 'игровая-поддержка'
-    },
-    'moderation': {
-        name: 'Модерация',
-        emoji: '🛡️',
-        channelName: 'модерация'
-    },
-    'other': {
-        name: 'Общие вопросы',
-        emoji: '📌',
-        channelName: 'общие-вопросы'
-    }
-};
-
-// ============================
 // ПРОВЕРКА ПЕРЕМЕННЫХ
 // ============================
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
@@ -81,66 +50,49 @@ app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 // ============================
-// ФУНКЦИЯ СОЗДАНИЯ КАНАЛОВ
+// ПЕРЕМЕННЫЕ ДЛЯ ID КАНАЛОВ (ЗАПОЛНЯЮТСЯ ПРИ ЗАПУСКЕ)
+// ============================
+let TICKET_CHANNEL_ID = null;
+let APPEAL_CHANNEL_ID = null;
+
+// ============================
+// ФУНКЦИЯ НАСТРОЙКИ КАНАЛОВ (ТОЛЬКО 2 КАНАЛА)
 // ============================
 async function setupChannels() {
     if (!GUILD_ID) {
         console.log("⚠️ GUILD_ID не задан, пропускаем создание каналов");
-        return {};
+        return;
     }
 
     try {
         const guild = await discordClient.guilds.fetch(GUILD_ID);
         if (!guild) {
             console.error("❌ Сервер не найден! Проверьте GUILD_ID");
-            return {};
+            return;
         }
 
         console.log(`✅ Найден сервер: ${guild.name}`);
-        console.log("🏗️ Начинаю настройку каналов...");
-
-        const channelMap = {};
+        console.log("🏗️ Настраиваю каналы...");
 
         // ============================
-        // КАТЕГОРИЯ "ПОДДЕРЖКА" ДЛЯ ТИКЕТОВ
+        // КАНАЛ ДЛЯ ТИКЕТОВ
         // ============================
-        let ticketCategory = guild.channels.cache.find(
-            c => c.type === ChannelType.GuildCategory && c.name === "Поддержка"
+        let ticketChannel = guild.channels.cache.find(
+            c => c.name === "тикеты" && c.type === ChannelType.GuildText
         );
 
-        if (!ticketCategory) {
-            console.log("📁 Создаю категорию 'Поддержка'...");
-            ticketCategory = await guild.channels.create({
-                name: "Поддержка",
-                type: ChannelType.GuildCategory
+        if (!ticketChannel) {
+            console.log("📢 Создаю канал #тикеты...");
+            ticketChannel = await guild.channels.create({
+                name: "тикеты",
+                type: ChannelType.GuildText
             });
-            console.log(`✅ Категория создана: ${ticketCategory.name}`);
+            console.log(`✅ Канал создан: #${ticketChannel.name} (ID: ${ticketChannel.id})`);
         } else {
-            console.log(`✅ Категория уже существует: ${ticketCategory.name}`);
+            console.log(`✅ Канал уже существует: #${ticketChannel.name} (ID: ${ticketChannel.id})`);
         }
 
-        // Создаём каналы для тикетов
-        for (const [key, cat] of Object.entries(CATEGORIES)) {
-            const channelName = cat.channelName;
-            
-            let channel = guild.channels.cache.find(
-                c => c.name === channelName && c.parentId === ticketCategory.id
-            );
-
-            if (!channel) {
-                console.log(`📢 Создаю канал #${channelName}...`);
-                channel = await guild.channels.create({
-                    name: channelName,
-                    type: ChannelType.GuildText,
-                    parent: ticketCategory.id
-                });
-                console.log(`✅ Канал создан: #${channel.name} (ID: ${channel.id})`);
-            } else {
-                console.log(`✅ Канал уже существует: #${channel.name} (ID: ${channel.id})`);
-            }
-
-            channelMap[key] = channel.id;
-        }
+        TICKET_CHANNEL_ID = ticketChannel.id;
 
         // ============================
         // КАНАЛ ДЛЯ АПЕЛЛЯЦИЙ
@@ -160,21 +112,17 @@ async function setupChannels() {
             console.log(`✅ Канал уже существует: #${appealChannel.name} (ID: ${appealChannel.id})`);
         }
 
-        channelMap['appeals'] = appealChannel.id;
+        APPEAL_CHANNEL_ID = appealChannel.id;
 
         console.log("✅ Настройка каналов завершена!");
-        return channelMap;
+        console.log(`📋 ID каналов:`);
+        console.log(`   Тикеты: ${TICKET_CHANNEL_ID}`);
+        console.log(`   Апелляции: ${APPEAL_CHANNEL_ID}`);
 
     } catch (error) {
         console.error("❌ Ошибка при создании каналов:", error.message);
-        return {};
     }
 }
-
-// ============================
-// ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ КАНАЛОВ
-// ============================
-let CHANNEL_MAP = {};
 
 // ============================
 // ПРОВЕРКА РАБОТЫ
@@ -183,14 +131,15 @@ app.get("/", (req, res) => {
     res.json({
         status: "online",
         message: "API is working",
-        channels: CHANNEL_MAP
+        channels: {
+            tickets: TICKET_CHANNEL_ID,
+            appeals: APPEAL_CHANNEL_ID
+        }
     });
 });
 
 // ============================
-// ═══════════════════════════════════════════
-// 1. АПЕЛЛЯЦИИ (основная функция)
-// ═══════════════════════════════════════════
+// 1. АПЕЛЛЯЦИИ
 // ============================
 app.post("/api/appeals", async (req, res) => {
     try {
@@ -203,7 +152,6 @@ app.post("/api/appeals", async (req, res) => {
             });
         }
 
-        // Создаем апелляцию в БД
         const { data, error } = await supabase
             .from("appeals")
             .insert({
@@ -235,9 +183,8 @@ app.post("/api/appeals", async (req, res) => {
         // ОТПРАВКА В КАНАЛ АПЕЛЛЯЦИЙ
         // ============================
         try {
-            const channelId = CHANNEL_MAP['appeals'];
-            if (channelId) {
-                const channel = await discordClient.channels.fetch(channelId);
+            if (APPEAL_CHANNEL_ID) {
+                const channel = await discordClient.channels.fetch(APPEAL_CHANNEL_ID);
                 
                 if (channel) {
                     const embed = new EmbedBuilder()
@@ -268,7 +215,10 @@ app.post("/api/appeals", async (req, res) => {
                                 .setStyle(ButtonStyle.Danger)
                         );
 
+                    const content = `<@&${STAFF_ROLE_ID}> 📝 Новая апелляция!`;
+
                     const message = await channel.send({
+                        content: content,
                         embeds: [embed],
                         components: [buttons]
                     });
@@ -301,7 +251,7 @@ app.post("/api/appeals", async (req, res) => {
 });
 
 // ============================
-// ПОЛУЧЕНИЕ СТАТУСА АПЕЛЛЯЦИИ
+// ПОЛУЧЕНИЕ АПЕЛЛЯЦИИ
 // ============================
 app.get("/api/appeals/:number", async (req, res) => {
     try {
@@ -335,9 +285,41 @@ app.get("/api/appeals/:number", async (req, res) => {
 });
 
 // ============================
-// ═══════════════════════════════════════════
-// 2. ТИКЕТЫ (поддержка)
-// ═══════════════════════════════════════════
+// ПОЛУЧЕНИЕ АПЕЛЛЯЦИЙ ПОЛЬЗОВАТЕЛЯ
+// ============================
+app.get("/api/appeals/user/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        const { data, error } = await supabase
+            .from("appeals")
+            .select("*")
+            .eq("discord_id", userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Ошибка базы данных."
+            });
+        }
+
+        res.json({
+            success: true,
+            appeals: data
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Ошибка сервера."
+        });
+    }
+});
+
+// ============================
+// 2. ТИКЕТЫ
 // ============================
 app.post("/api/tickets", async (req, res) => {
     try {
@@ -347,14 +329,6 @@ app.post("/api/tickets", async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: "Заполните все поля."
-            });
-        }
-
-        const channelId = CHANNEL_MAP[category];
-        if (!channelId) {
-            return res.status(500).json({
-                success: false,
-                message: "Канал для этой категории не найден."
             });
         }
 
@@ -388,65 +362,74 @@ app.post("/api/tickets", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В КАНАЛ ТИКЕТА
+        // ОТПРАВКА В КАНАЛ ТИКЕТОВ
         // ============================
         try {
-            const channel = await discordClient.channels.fetch(channelId);
-            
-            if (channel) {
-                const priorityEmoji = { low: '🟢', medium: '🟡', high: '🔴' }[priority] || '🟡';
-                const catInfo = CATEGORIES[category] || CATEGORIES['other'];
+            if (TICKET_CHANNEL_ID) {
+                const channel = await discordClient.channels.fetch(TICKET_CHANNEL_ID);
+                
+                if (channel) {
+                    const priorityEmoji = { low: '🟢', medium: '🟡', high: '🔴' }[priority] || '🟡';
+                    const catNames = {
+                        'technical': '🖥️ Техническая проблема',
+                        'financial': '💳 Финансовый вопрос',
+                        'gameplay': '🎮 Игровой вопрос',
+                        'moderation': '🛡️ Модерация',
+                        'other': '📌 Другое'
+                    };
+                    const categoryName = catNames[category] || category;
 
-                const embed = new EmbedBuilder()
-                    .setTitle('🎫 Новый тикет')
-                    .setColor(0x5865F2)
-                    .setDescription(`**${userName}** создал(а) обращение.`)
-                    .addFields(
-                        { name: '📌 Номер', value: `\`${ticketNumber}\``, inline: true },
-                        { name: '👤 Пользователь', value: `<@${userId}>`, inline: true },
-                        { name: '🏷️ Категория', value: `${catInfo.emoji} ${catInfo.name}`, inline: true },
-                        { name: '📊 Приоритет', value: `${priorityEmoji} ${priority || 'medium'}`, inline: true },
-                        { name: '📝 Тема', value: subject },
-                        { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
-                        { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
-                    )
-                    .setFooter({ text: `Система поддержки • ${catInfo.name}` })
-                    .setTimestamp();
+                    const embed = new EmbedBuilder()
+                        .setTitle('🎫 Новый тикет')
+                        .setColor(0x5865F2)
+                        .setDescription(`**${userName}** создал(а) обращение.`)
+                        .addFields(
+                            { name: '📌 Номер', value: `\`${ticketNumber}\``, inline: true },
+                            { name: '👤 Пользователь', value: `<@${userId}>`, inline: true },
+                            { name: '🏷️ Категория', value: categoryName, inline: true },
+                            { name: '📊 Приоритет', value: `${priorityEmoji} ${priority || 'medium'}`, inline: true },
+                            { name: '📝 Тема', value: subject },
+                            { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
+                            { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
+                        )
+                        .setFooter({ text: 'Система поддержки' })
+                        .setTimestamp();
 
-                const buttons = new ActionRowBuilder()
-                    .addComponents(
-                        new ButtonBuilder()
-                            .setCustomId(`ticket_take_${data.id}`)
-                            .setLabel("Взять в работу")
-                            .setEmoji("🛠️")
-                            .setStyle(ButtonStyle.Primary),
-                        new ButtonBuilder()
-                            .setCustomId(`ticket_close_${data.id}`)
-                            .setLabel("Закрыть тикет")
-                            .setEmoji("🔒")
-                            .setStyle(ButtonStyle.Danger),
-                        new ButtonBuilder()
-                            .setCustomId(`ticket_reply_${data.id}`)
-                            .setLabel("Быстрый ответ")
-                            .setEmoji("⚡")
-                            .setStyle(ButtonStyle.Success)
-                    );
+                    const buttons = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setCustomId(`ticket_take_${data.id}`)
+                                .setLabel("Взять в работу")
+                                .setEmoji("🛠️")
+                                .setStyle(ButtonStyle.Primary),
+                            new ButtonBuilder()
+                                .setCustomId(`ticket_close_${data.id}`)
+                                .setLabel("Закрыть тикет")
+                                .setEmoji("🔒")
+                                .setStyle(ButtonStyle.Danger),
+                            new ButtonBuilder()
+                                .setCustomId(`ticket_reply_${data.id}`)
+                                .setLabel("Быстрый ответ")
+                                .setEmoji("⚡")
+                                .setStyle(ButtonStyle.Success)
+                        );
 
-                const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет в категории ${catInfo.emoji} ${catInfo.name}!`;
+                    const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
 
-                const message = await channel.send({
-                    content: content,
-                    embeds: [embed],
-                    components: [buttons]
-                });
+                    const message = await channel.send({
+                        content: content,
+                        embeds: [embed],
+                        components: [buttons]
+                    });
 
-                await supabase
-                    .from("tickets")
-                    .update({
-                        discord_message_id: message.id,
-                        discord_channel_id: channel.id
-                    })
-                    .eq("id", data.id);
+                    await supabase
+                        .from("tickets")
+                        .update({
+                            discord_message_id: message.id,
+                            discord_channel_id: channel.id
+                        })
+                        .eq("id", data.id);
+                }
             }
         } catch (discordError) {
             console.error("Ошибка отправки в Discord:", discordError.message);
@@ -536,12 +519,10 @@ app.get("/api/tickets/user/:userId", async (req, res) => {
 });
 
 // ============================
-// ═══════════════════════════════════════════
 // 3. ОБРАБОТКА КНОПОК В DISCORD
-// ═══════════════════════════════════════════
 // ============================
 
-// ===== КНОПКИ ДЛЯ АПЕЛЛЯЦИЙ =====
+// ===== АПЕЛЛЯЦИИ =====
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isButton()) return;
@@ -580,7 +561,7 @@ discordClient.on("interactionCreate", async (interaction) => {
     }
 });
 
-// ===== МОДАЛКА ДЛЯ ОТКЛОНЕНИЯ АПЕЛЛЯЦИИ =====
+// ===== МОДАЛКА АПЕЛЛЯЦИИ =====
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isModalSubmit()) return;
@@ -663,7 +644,7 @@ async function decideAppeal(interaction, id, status, decisionReason) {
     });
 }
 
-// ===== КНОПКИ ДЛЯ ТИКЕТОВ =====
+// ===== ТИКЕТЫ =====
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isButton()) return;
@@ -773,7 +754,7 @@ discordClient.on("interactionCreate", async (interaction) => {
     }
 });
 
-// ===== МОДАЛКИ ДЛЯ ТИКЕТОВ =====
+// ===== МОДАЛКИ ТИКЕТОВ =====
 discordClient.on("interactionCreate", async (interaction) => {
     try {
         if (!interaction.isModalSubmit()) return;
@@ -861,11 +842,7 @@ if (DISCORD_TOKEN) {
     discordClient.login(DISCORD_TOKEN)
         .then(async () => {
             console.log("🤖 Discord бот запущен!");
-            CHANNEL_MAP = await setupChannels();
-            console.log("📋 ID каналов:");
-            for (const [key, id] of Object.entries(CHANNEL_MAP)) {
-                console.log(`   ${key}: ${id}`);
-            }
+            await setupChannels();
         })
         .catch((error) => {
             console.error("❌ Ошибка запуска бота:", error.message);
