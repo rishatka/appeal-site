@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const { createClient } = require("@supabase/supabase-js");
 const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ChannelType } = require("discord.js");
+const crypto = require('crypto');
 
 // ============================
 // НАСТРОЙКИ
@@ -13,6 +14,43 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || "1538206195238572142";
 const GUILD_ID = process.env.GUILD_ID;
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "my-super-secret-key-32chars!!!";
+
+// ============================
+// ШИФРОВАНИЕ
+// ============================
+const ALGORITHM = 'aes-256-cbc';
+const IV_LENGTH = 16;
+
+function encrypt(text) {
+    if (!text) return text;
+    try {
+        const iv = crypto.randomBytes(IV_LENGTH);
+        const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32)), iv);
+        let encrypted = cipher.update(text, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        return iv.toString('hex') + ':' + encrypted;
+    } catch (error) {
+        console.error('Ошибка шифрования:', error);
+        return text;
+    }
+}
+
+function decrypt(text) {
+    if (!text || !text.includes(':')) return text;
+    try {
+        const parts = text.split(':');
+        const iv = Buffer.from(parts[0], 'hex');
+        const encryptedText = parts[1];
+        const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY.padEnd(32, '0').slice(0, 32)), iv);
+        let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+    } catch (error) {
+        console.error('Ошибка дешифрования:', error);
+        return text;
+    }
+}
 
 // ============================
 // ПРОВЕРКА ПЕРЕМЕННЫХ
@@ -156,13 +194,18 @@ app.post("/api/appeals", async (req, res) => {
             });
         }
 
+        // Шифруем чувствительные данные
+        const encryptedNickname = encrypt(nickname);
+        const encryptedPunishment = encrypt(punishment);
+        const encryptedReason = encrypt(reason);
+
         const { data, error } = await supabase
             .from("appeals")
             .insert({
                 discord_id: discord,
-                discord_username: nickname,
-                punishment: punishment,
-                reason: reason,
+                discord_username: encryptedNickname,
+                punishment: encryptedPunishment,
+                reason: encryptedReason,
                 status: "pending"
             })
             .select()
@@ -184,7 +227,7 @@ app.post("/api/appeals", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В КАНАЛ АПЕЛЛЯЦИЙ (ИСПРАВЛЕНО)
+        // ОТПРАВКА В КАНАЛ АПЕЛЛЯЦИЙ
         // ============================
         try {
             if (APPEAL_CHANNEL_ID) {
@@ -202,7 +245,7 @@ app.post("/api/appeals", async (req, res) => {
                             { name: '💬 Причина', value: reason },
                             { name: '⏳ Статус', value: '🟡 На рассмотрении', inline: true }
                         )
-                        .setFooter({ text: 'Система апелляций' })
+                        .setFooter({ text: '🔐 Защищённая система' })
                         .setTimestamp();
 
                     const buttons = new ActionRowBuilder()
@@ -221,7 +264,6 @@ app.post("/api/appeals", async (req, res) => {
 
                     const content = `<@&${STAFF_ROLE_ID}> 📝 Новая апелляция!`;
 
-                    // ✅ ИСПРАВЛЕНО: sentMessage вместо message
                     const sentMessage = await channel.send({
                         content: content,
                         embeds: [embed],
@@ -275,6 +317,11 @@ app.get("/api/appeals/:number", async (req, res) => {
             });
         }
 
+        // Расшифровываем
+        if (data.discord_username) data.discord_username = decrypt(data.discord_username);
+        if (data.punishment) data.punishment = decrypt(data.punishment);
+        if (data.reason) data.reason = decrypt(data.reason);
+
         res.json({
             success: true,
             appeal: data
@@ -309,6 +356,13 @@ app.get("/api/appeals/user/:userId", async (req, res) => {
             });
         }
 
+        // Расшифровываем
+        data.forEach(appeal => {
+            if (appeal.discord_username) appeal.discord_username = decrypt(appeal.discord_username);
+            if (appeal.punishment) appeal.punishment = decrypt(appeal.punishment);
+            if (appeal.reason) appeal.reason = decrypt(appeal.reason);
+        });
+
         res.json({
             success: true,
             appeals: data
@@ -337,13 +391,18 @@ app.post("/api/tickets", async (req, res) => {
             });
         }
 
+        // Шифруем чувствительные данные
+        const encryptedUserName = encrypt(userName);
+        const encryptedSubject = encrypt(subject);
+        const encryptedMessage = encrypt(message);
+
         const { data, error } = await supabase
             .from("tickets")
             .insert({
                 user_id: userId,
-                user_name: userName,
-                subject: subject,
-                message: message,
+                user_name: encryptedUserName,
+                subject: encryptedSubject,
+                message: encryptedMessage,
                 priority: priority || 'medium',
                 category: category,
                 status: 'open'
@@ -367,7 +426,7 @@ app.post("/api/tickets", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В КАНАЛ ТИКЕТОВ (ИСПРАВЛЕНО)
+        // ОТПРАВКА В КАНАЛ ТИКЕТОВ
         // ============================
         try {
             if (TICKET_CHANNEL_ID) {
@@ -397,7 +456,7 @@ app.post("/api/tickets", async (req, res) => {
                             { name: '💬 Сообщение', value: message.length > 500 ? message.slice(0, 500) + '…' : message },
                             { name: '⏳ Статус', value: '🟢 Открыт', inline: true }
                         )
-                        .setFooter({ text: 'Система поддержки' })
+                        .setFooter({ text: '🔐 Защищённая система' })
                         .setTimestamp();
 
                     const buttons = new ActionRowBuilder()
@@ -421,7 +480,6 @@ app.post("/api/tickets", async (req, res) => {
 
                     const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
 
-                    // ✅ ИСПРАВЛЕНО: sentMessage вместо message
                     const sentMessage = await channel.send({
                         content: content,
                         embeds: [embed],
@@ -476,9 +534,30 @@ app.get("/api/tickets/:number", async (req, res) => {
             });
         }
 
+        // Расшифровываем
+        if (data.user_name) data.user_name = decrypt(data.user_name);
+        if (data.subject) data.subject = decrypt(data.subject);
+        if (data.message) data.message = decrypt(data.message);
+
+        // Получаем ответы
+        const repliesResponse = await supabase
+            .from("ticket_replies")
+            .select("*")
+            .eq("ticket_id", data.id)
+            .order("created_at", { ascending: true });
+
+        let replies = [];
+        if (repliesResponse.data) {
+            replies = repliesResponse.data.map(reply => {
+                if (reply.content) reply.content = decrypt(reply.content);
+                return reply;
+            });
+        }
+
         res.json({
             success: true,
-            ticket: data
+            ticket: data,
+            replies: replies
         });
 
     } catch (error) {
@@ -510,6 +589,13 @@ app.get("/api/tickets/user/:userId", async (req, res) => {
             });
         }
 
+        // Расшифровываем
+        data.forEach(ticket => {
+            if (ticket.user_name) ticket.user_name = decrypt(ticket.user_name);
+            if (ticket.subject) ticket.subject = decrypt(ticket.subject);
+            if (ticket.message) ticket.message = decrypt(ticket.message);
+        });
+
         res.json({
             success: true,
             tickets: data
@@ -525,7 +611,64 @@ app.get("/api/tickets/user/:userId", async (req, res) => {
 });
 
 // ============================
-// 3. ОБРАБОТКА КНОПОК
+// ОТВЕТЫ НА ТИКЕТЫ
+// ============================
+app.post("/api/tickets/:ticketId/replies", async (req, res) => {
+    try {
+        const ticketId = parseInt(req.params.ticketId);
+        const { authorId, authorName, content, isModerator } = req.body;
+
+        if (!content) {
+            return res.status(400).json({
+                success: false,
+                message: "Введите текст ответа."
+            });
+        }
+
+        // Шифруем ответ
+        const encryptedContent = encrypt(content);
+        const encryptedAuthorName = encrypt(authorName || 'Система');
+
+        const { data, error } = await supabase
+            .from("ticket_replies")
+            .insert({
+                ticket_id: ticketId,
+                author_id: authorId || 'system',
+                author_name: encryptedAuthorName,
+                content: encryptedContent,
+                is_moderator: isModerator || false
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Ошибка сохранения ответа."
+            });
+        }
+
+        // Расшифровываем для ответа
+        if (data.content) data.content = decrypt(data.content);
+        if (data.author_name) data.author_name = decrypt(data.author_name);
+
+        res.json({
+            success: true,
+            reply: data
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Ошибка сервера."
+        });
+    }
+});
+
+// ============================
+// 3. ОБРАБОТКА КНОПОК В DISCORD
 // ============================
 
 // ===== АПЕЛЛЯЦИИ =====
@@ -821,10 +964,60 @@ discordClient.on("interactionCreate", async (interaction) => {
             const ticketId = Number(interaction.customId.replace("ticket_reply_modal_", ""));
             const reply = interaction.fields.getTextInputValue("reply_text");
 
-            await interaction.reply({
-                content: `✅ Быстрый ответ отправлен!\n\n📝 **Ответ:**\n${reply}`,
-                ephemeral: true
-            });
+            // ===== СОХРАНЯЕМ ОТВЕТ В БД =====
+            try {
+                const { data: ticketData, error: ticketError } = await supabase
+                    .from("tickets")
+                    .select("*")
+                    .eq("id", ticketId)
+                    .single();
+
+                if (ticketError || !ticketData) {
+                    return interaction.reply({
+                        content: "❌ Тикет не найден.",
+                        ephemeral: true
+                    });
+                }
+
+                // Шифруем и сохраняем ответ
+                const encryptedReply = encrypt(reply);
+                const encryptedAuthorName = encrypt(interaction.user.username);
+
+                await supabase
+                    .from("ticket_replies")
+                    .insert({
+                        ticket_id: ticketId,
+                        author_id: interaction.user.id,
+                        author_name: encryptedAuthorName,
+                        content: encryptedReply,
+                        is_moderator: true
+                    });
+
+                // Отправляем ответ в канал
+                const channel = await discordClient.channels.fetch(ticketData.discord_channel_id);
+                const msg = await channel.messages.fetch(ticketData.discord_message_id);
+
+                const embed = EmbedBuilder.from(msg.embeds[0]);
+                embed.addFields(
+                    { name: `💬 Ответ от ${interaction.user.username}`, value: reply }
+                );
+
+                await msg.edit({
+                    embeds: [embed]
+                });
+
+                await interaction.reply({
+                    content: `✅ Ответ сохранён в БД и отправлен в канал!`,
+                    ephemeral: true
+                });
+
+            } catch (error) {
+                console.error(error);
+                await interaction.reply({
+                    content: "❌ Ошибка при сохранении ответа.",
+                    ephemeral: true
+                });
+            }
         }
 
     } catch (error) {
@@ -838,6 +1031,7 @@ discordClient.on("interactionCreate", async (interaction) => {
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`✅ API запущен на порту ${PORT}`);
     console.log(`📊 Supabase URL: ${SUPABASE_URL}`);
+    console.log(`🔐 Шифрование включено`);
 });
 
 // ============================
