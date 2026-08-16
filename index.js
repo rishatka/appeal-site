@@ -184,7 +184,7 @@ app.post("/api/appeals", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В КАНАЛ АПЕЛЛЯЦИЙ
+        // ОТПРАВКА В КАНАЛ АПЕЛЛЯЦИЙ (ИСПРАВЛЕНО)
         // ============================
         try {
             if (APPEAL_CHANNEL_ID) {
@@ -221,7 +221,8 @@ app.post("/api/appeals", async (req, res) => {
 
                     const content = `<@&${STAFF_ROLE_ID}> 📝 Новая апелляция!`;
 
-                    const message = await channel.send({
+                    // ✅ ИСПРАВЛЕНО: sentMessage вместо message
+                    const sentMessage = await channel.send({
                         content: content,
                         embeds: [embed],
                         components: [buttons]
@@ -230,7 +231,7 @@ app.post("/api/appeals", async (req, res) => {
                     await supabase
                         .from("appeals")
                         .update({
-                            discord_message_id: message.id,
+                            discord_message_id: sentMessage.id,
                             discord_channel_id: channel.id
                         })
                         .eq("id", data.id);
@@ -366,7 +367,7 @@ app.post("/api/tickets", async (req, res) => {
             .eq("id", data.id);
 
         // ============================
-        // ОТПРАВКА В КАНАЛ ТИКЕТОВ
+        // ОТПРАВКА В КАНАЛ ТИКЕТОВ (ИСПРАВЛЕНО)
         // ============================
         try {
             if (TICKET_CHANNEL_ID) {
@@ -420,7 +421,8 @@ app.post("/api/tickets", async (req, res) => {
 
                     const content = `<@&${STAFF_ROLE_ID}> 🆕 Новый тикет!`;
 
-                    const message = await channel.send({
+                    // ✅ ИСПРАВЛЕНО: sentMessage вместо message
+                    const sentMessage = await channel.send({
                         content: content,
                         embeds: [embed],
                         components: [buttons]
@@ -429,7 +431,7 @@ app.post("/api/tickets", async (req, res) => {
                     await supabase
                         .from("tickets")
                         .update({
-                            discord_message_id: message.id,
+                            discord_message_id: sentMessage.id,
                             discord_channel_id: channel.id
                         })
                         .eq("id", data.id);
@@ -617,9 +619,9 @@ async function decideAppeal(interaction, id, status, decisionReason) {
 
     try {
         const channel = await discordClient.channels.fetch(data.discord_channel_id);
-        const message = await channel.messages.fetch(data.discord_message_id);
+        const msg = await channel.messages.fetch(data.discord_message_id);
 
-        const newEmbed = EmbedBuilder.from(message.embeds[0])
+        const newEmbed = EmbedBuilder.from(msg.embeds[0])
             .setColor(status === "approved" ? 0x57F287 : 0xED4245);
 
         const fields = newEmbed.data.fields || [];
@@ -633,7 +635,7 @@ async function decideAppeal(interaction, id, status, decisionReason) {
             { name: "👤 Модератор", value: `<@${moderator.id}>` }
         );
 
-        await message.edit({
+        await msg.edit({
             embeds: [newEmbed],
             components: []
         });
@@ -695,9 +697,9 @@ discordClient.on("interactionCreate", async (interaction) => {
                 .eq("id", ticketId);
 
             const channel = await discordClient.channels.fetch(data.discord_channel_id);
-            const message = await channel.messages.fetch(data.discord_message_id);
+            const msg = await channel.messages.fetch(data.discord_message_id);
 
-            const newEmbed = EmbedBuilder.from(message.embeds[0])
+            const newEmbed = EmbedBuilder.from(msg.embeds[0])
                 .setColor(0xf0b400);
 
             const fields = newEmbed.data.fields || [];
@@ -710,7 +712,7 @@ discordClient.on("interactionCreate", async (interaction) => {
                 { name: "🛠️ Модератор", value: `<@${interaction.user.id}>` }
             );
 
-            await message.edit({
+            await msg.edit({
                 embeds: [newEmbed]
             });
 
@@ -789,9 +791,9 @@ discordClient.on("interactionCreate", async (interaction) => {
                 .eq("id", ticketId);
 
             const channel = await discordClient.channels.fetch(data.discord_channel_id);
-            const message = await channel.messages.fetch(data.discord_message_id);
+            const msg = await channel.messages.fetch(data.discord_message_id);
 
-            const newEmbed = EmbedBuilder.from(message.embeds[0])
+            const newEmbed = EmbedBuilder.from(msg.embeds[0])
                 .setColor(0xED4245);
 
             const fields = newEmbed.data.fields || [];
@@ -804,7 +806,7 @@ discordClient.on("interactionCreate", async (interaction) => {
                 { name: "🔒 Причина закрытия", value: reason }
             );
 
-            await message.edit({
+            await msg.edit({
                 embeds: [newEmbed],
                 components: []
             });
